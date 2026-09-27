@@ -229,12 +229,12 @@ const QUESTION_BANK = [
     hint: 'Evaluate g(4) first, then put that result into f.', explanation: 'g(4) = 12 and f(12) = 14.'
   },
   {
-    id: 'geo-05', domain: 'geometry', skill: 'Circle area', difficulty: 'foundation',
+    id: 'geo-06', domain: 'geometry', skill: 'Circle area', difficulty: 'foundation',
     prompt: 'A circle has radius 6. What is its area in terms of π?', options: ['6π', '12π', '18π', '36π'], answer: 3,
     hint: 'Use A = πr².', explanation: 'A = π(6²) = 36π.'
   },
   {
-    id: 'geo-06', domain: 'geometry', skill: 'Right triangles', difficulty: 'foundation', diagnostic: true,
+    id: 'geo-07', domain: 'geometry', skill: 'Right triangles', difficulty: 'foundation',
     prompt: 'A right triangle has legs 5 and 12. What is the hypotenuse?', options: ['11', '13', '15', '17'], answer: 1,
     hint: 'Recognize the 5-12-13 Pythagorean triple.', explanation: '5² + 12² = 169, so the hypotenuse is 13.'
   },
