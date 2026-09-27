@@ -2288,16 +2288,7 @@ function overallStats() {
 }
 
 function estimatedScore() {
-  const start = state.profile?.startingScore || 540;
-  const target = state.profile?.targetScore || 680;
-  if (!state.diagnostic.completed) return start;
-  const diagnosticRate = state.diagnostic.answers.filter(answer => answer.correct).length / Math.max(1, state.diagnostic.answers.length);
-  const recent = state.attempts.slice(-24);
-  const recentRate = recent.length ? recent.filter(attempt => attempt.correct).length / recent.length : diagnosticRate;
-  const evidence = Math.min(1, (state.diagnostic.answers.length + recent.length) / 28);
-  const skillLift = Math.max(0, ((recentRate * .65 + diagnosticRate * .35) - .42) * 235);
-  const estimate = start + skillLift * evidence;
-  return Math.round(clamp(estimate, 200, Math.max(target + 30, start)) / 10) * 10;
+  return state.profile?.startingScore || 540;
 }
 
 function daysUntilTest() {
@@ -2360,7 +2351,7 @@ function renderHome() {
   document.querySelector('#goal-target').textContent = profile.targetScore;
   document.querySelector('#estimated-score').textContent = estimate;
   document.querySelector('#points-to-go').textContent = pointsToGo ? `${pointsToGo} points to go` : 'Goal range reached';
-  document.querySelector('#score-message').textContent = !state.diagnostic.completed ? 'Complete the diagnostic to calibrate your plan.' : state.attempts.length < 8 ? 'Keep practicing so this estimate has more evidence.' : 'Use Bluebook for an official scored checkpoint.';
+  document.querySelector('#score-message').textContent = 'Your reported test score. Practice accuracy is tracked separately; use Bluebook to measure score growth.';
   document.querySelector('#trend-badge').textContent = estimate > profile.startingScore ? `+${estimate - profile.startingScore} estimated` : 'Baseline';
   document.querySelector('#score-track-fill').style.width = `${progress}%`;
   document.querySelector('#score-ring').style.setProperty('--score-angle', `${Math.max(18, progress * 3.6)}deg`);
@@ -2368,7 +2359,7 @@ function renderHome() {
   document.querySelector('#track-goal').textContent = `${profile.targetScore} goal`;
 
   const missionTitle = state.diagnostic.completed ? `Strengthen ${DOMAINS[weakest].name}` : 'Find your starting point';
-  const missionCopy = state.diagnostic.completed ? `Your current practice shows the biggest opportunity in ${DOMAINS[weakest].short.toLowerCase()}. Orbit will start there and adjust as you improve.` : 'Take an 8-question diagnostic so Orbit can build a study path around your strengths and gaps.';
+  const missionCopy = state.diagnostic.completed ? `Your current practice shows the biggest opportunity in ${DOMAINS[weakest].short.toLowerCase()}. Orbit will start there and adjust as you improve.` : 'Take an 10-question diagnostic so Orbit can build a study path around your strengths and gaps.';
   document.querySelector('#mission-title').textContent = missionTitle;
   document.querySelector('#mission-copy').textContent = missionCopy;
   document.querySelector('#mission-button').innerHTML = state.diagnostic.completed ? 'Start focused practice <span aria-hidden="true">→</span>' : 'Start diagnostic <span aria-hidden="true">→</span>';
@@ -2408,7 +2399,7 @@ function practicePool() {
   const domain = document.querySelector('#domain-select').value;
   let pool = QUESTION_BANK.filter(question => domain === 'all' || question.domain === domain);
   if (mode === 'mistakes') {
-    const missedIds = new Set(state.attempts.filter(attempt => !attempt.correct).map(attempt => attempt.questionId));
+    const missedIds = new Set(outstandingMistakes().map(attempt => attempt.questionId));
     pool = pool.filter(question => missedIds.has(question.id));
     if (!pool.length) {
       showToast('No missed questions in that selection yet. Starting a smart mix instead.');
@@ -2431,10 +2422,17 @@ function practicePool() {
 
 function chooseQuestion(preferredId = null) {
   clearInterval(timerInterval);
-  const pool = practicePool();
+  let pool = practicePool();
+  const level = document.querySelector('#difficulty-select')?.value || 'all';
+  if (level !== 'all') {
+    const filtered = pool.filter(q => q.difficulty === level);
+    if (filtered.length) pool = filtered;
+  }
   if (!pool.length) return;
   const recentIds = new Set(state.attempts.slice(-5).map(attempt => attempt.questionId));
-  const fresh = pool.filter(question => !recentIds.has(question.id) && question.id !== state.lastQuestionId);
+  const seen = new Set(state.attempts.map(a => a.questionId));
+  const unseen = pool.filter(q => !seen.has(q.id) && q.id !== state.lastQuestionId);
+  const fresh = unseen.length ? unseen : pool.filter(question => !recentIds.has(question.id) && question.id !== state.lastQuestionId);
   const candidates = fresh.length ? fresh : pool.filter(question => question.id !== state.lastQuestionId);
   currentQuestion = preferredId ? questionById(preferredId) : (candidates.length ? candidates : pool)[Math.floor(Math.random() * (candidates.length || pool.length))];
   selectedAnswer = null;
@@ -2457,6 +2455,7 @@ function renderQuestion() {
       ${currentQuestion.options.map((option, index) => `<button class="option" type="button" role="radio" aria-checked="false" data-answer="${index}"><span class="option-letter">${letters[index]}</span><span>${escapeHtml(option)}</span></button>`).join('')}
     </div>
     <div id="question-support" aria-live="polite"></div>
+    <details class="hint-box"><summary>Formula guide & study tips</summary><p>${studyGuide(currentQuestion.domain)}</p><p>Write down what the question asks. Choose a method, work it out on paper, then check your answer in the original problem.</p></details>
     <div class="question-actions"><button class="hint-button" type="button" id="show-hint">Give me a hint</button><button class="primary-button" type="button" id="check-answer" disabled>Check answer</button></div>`;
 }
 
@@ -2499,16 +2498,37 @@ function submitAnswer() {
   const correct = selectedAnswer === currentQuestion.answer;
   const seconds = Math.max(1, Math.round((Date.now() - questionStartedAt) / 1000));
   state.attempts.push({ questionId: currentQuestion.id, domain: currentQuestion.domain, skill: currentQuestion.skill, correct, selected: selectedAnswer, seconds, date: new Date().toISOString() });
-  recordStudy(2);
+  recordStudy(Math.round(Math.min(seconds, 1800) / 60 * 10) / 10);
   saveState();
   document.querySelectorAll('.option').forEach((option, index) => {
     option.disabled = true;
     if (index === currentQuestion.answer) option.classList.add('correct');
     if (index === selectedAnswer && !correct) option.classList.add('incorrect');
   });
-  document.querySelector('#question-support').innerHTML = `<div class="feedback-box ${correct ? 'correct' : 'incorrect'}"><strong>${correct ? 'Nice work.' : 'Good miss—this is where growth happens.'}</strong>${escapeHtml(currentQuestion.explanation)}</div>`;
+  document.querySelector('#question-support').innerHTML = `<div class="feedback-box ${correct ? 'correct' : 'incorrect'}"><strong>${correct ? 'Correct — check your reasoning below.' : 'Let’s work through it.'}</strong><p>Answer: ${escapeHtml(currentQuestion.options[currentQuestion.answer])}</p><p>${escapeHtml(currentQuestion.explanation)}</p><p><b>Remember:</b> ${escapeHtml(currentQuestion.hint)}</p><label for="reflection">What will you remember next time?</label><textarea id="reflection" rows="2" maxlength="300" placeholder="Example: subtract the fixed fee before dividing."></textarea><button class="secondary-button" type="button" id="save-reflection">Save my note</button></div>`;
   const actions = document.querySelector('.question-actions');
-  actions.innerHTML = `<span class="question-meta">${seconds}s · ${correct ? 'Correct' : 'Review saved'}</span><button class="primary-button" type="button" id="next-question">Next question →</button>`;
+  actions.innerHTML = `<button class="secondary-button" type="button" id="similar-question">Try a similar question</button><button class="primary-button" type="button" id="next-question">Next question →</button>`;
+  const today = state.attempts.filter(a => a.date.slice(0, 10) === todayKey()).length;
+  document.querySelector('#question-support').insertAdjacentHTML('beforeend', `<p class="hint-box">${today} questions practiced today · ${today >= 10 ? 'Daily goal reached. Take a break or keep learning.' : `${10 - today} more to your daily goal of 10.`}</p>`);
+}
+
+function studyGuide(domain) {
+  return {
+    algebra: 'Linear equations: do the same operation to both sides. Slope = change in y ÷ change in x. Line: y = mx + b. Systems: substitution or elimination. Reverse an inequality only when multiplying or dividing by a negative number.',
+    advanced: 'Quadratics: set each factor equal to zero. Vertex form: a(x − h)² + k. Vertex x-coordinate: −b/(2a). Exponents: multiply same bases → add powers; divide → subtract powers. Growth model: initial amount × (1 + rate)^time. Check radical solutions in the original equation.',
+    geometry: 'Triangle area = bh/2. Circle area = πr²; circumference = 2πr. Cylinder volume = πr²h. Right triangles: a² + b² = c². SOH-CAH-TOA: sin = opposite/hypotenuse, cos = adjacent/hypotenuse, tan = opposite/adjacent. Similar figures: lengths scale by k, areas by k².',
+    data: 'Percent change = (new − old)/old × 100%. Mean = sum/count. Probability = favorable outcomes/total outcomes. Keep units consistent. Residual = observed − predicted.'
+  }[domain];
+}
+
+function similarQuestion() {
+  if (!currentQuestion) return;
+  const sameSkill = QUESTION_BANK.filter(q => q.id !== currentQuestion.id && q.skill === currentQuestion.skill);
+  const alternatives = sameSkill.length ? sameSkill : QUESTION_BANK.filter(q => q.id !== currentQuestion.id && q.domain === currentQuestion.domain && q.difficulty === currentQuestion.difficulty);
+  const unseen = alternatives.filter(q => !state.attempts.some(a => a.questionId === q.id));
+  const pool = unseen.length ? unseen : alternatives;
+  if (!pool.length) return chooseQuestion();
+  chooseQuestion(pool[Math.floor(Math.random() * pool.length)].id);
 }
 
 function outstandingMistakes() {
@@ -2535,7 +2555,7 @@ function renderReview() {
   container.innerHTML = mistakes.map(attempt => {
     const question = questionById(attempt.questionId);
     if (!question) return '';
-    return `<article class="mistake-item"><div><span class="mistake-domain">${DOMAINS[question.domain].name} · ${escapeHtml(question.skill)}</span><h3>${escapeHtml(question.prompt)}</h3><p>${escapeHtml(question.explanation)}</p></div><button class="secondary-button" type="button" data-retry="${question.id}">Retry question</button></article>`;
+    return `<article class="mistake-item"><div><span class="mistake-domain">${DOMAINS[question.domain].name} · ${escapeHtml(question.skill)}</span><h3>${escapeHtml(question.prompt)}</h3><p>${escapeHtml(question.explanation)}</p>${attempt.note ? `<p><b>My takeaway:</b> ${escapeHtml(attempt.note)}</p>` : ''} </div><button class="secondary-button" type="button" data-retry="${question.id}">Retry question</button></article>`;
   }).join('');
 }
 
@@ -2544,7 +2564,7 @@ function renderProgress() {
   const averageSeconds = state.attempts.length ? Math.round(state.attempts.reduce((sum, attempt) => sum + (attempt.seconds || 0), 0) / state.attempts.length) : 0;
   const totalMinutes = Object.values(state.studyDays).reduce((sum, minutes) => sum + Number(minutes || 0), 0);
   document.querySelector('#metrics-grid').innerHTML = `
-    <article class="metric-card"><strong>${estimatedScore()}</strong><small>Estimated level</small></article>
+    <article class="metric-card"><strong>${estimatedScore()}</strong><small>Reported score</small></article>
     <article class="metric-card"><strong>${stats.accuracy}%</strong><small>Overall accuracy</small></article>
     <article class="metric-card"><strong>${averageSeconds || '—'}${averageSeconds ? 's' : ''}</strong><small>Average pace</small></article>
     <article class="metric-card"><strong>${totalMinutes}</strong><small>Minutes practiced</small></article>`;
@@ -2660,6 +2680,12 @@ function saveSettings() {
 }
 
 function handleClick(event) {
+  if (event.target.closest('#similar-question')) return similarQuestion();
+  if (event.target.closest('#save-reflection')) {
+    const last = state.attempts[state.attempts.length - 1];
+    if (last) { last.note = document.querySelector('#reflection').value.trim(); saveState(); showToast('Note saved in your review journal.'); }
+    return;
+  }
   const route = event.target.closest('[data-route]');
   if (route) return routeTo(route.dataset.route);
 
@@ -2734,6 +2760,7 @@ function init() {
   });
   window.addEventListener('hashchange', () => routeTo(location.hash.slice(1)));
   document.addEventListener('keydown', event => {
+    if (event.target.closest('input, textarea, select') || document.querySelector('dialog[open]')) return;
     if (!currentQuestion || questionAnswered || !document.querySelector('#view-practice').classList.contains('active')) return;
     const number = Number(event.key);
     if (number >= 1 && number <= 4) selectAnswer(number - 1);
