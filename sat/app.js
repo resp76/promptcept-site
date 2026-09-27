@@ -152,7 +152,137 @@ const QUESTION_BANK = [
     hint: 'sin θ = opposite/hypotenuse. Set 3/5 = 12/h.',
     explanation: '3/5 = 12/h. Cross-multiplying gives 3h = 60, so h = 20.'
   }
-];
+
+  {
+    id: 'alg-06', domain: 'algebra', skill: 'Systems of equations', difficulty: 'foundation', diagnostic: true,
+    prompt: 'If 2x + y = 11 and x − y = 1, what is the value of x?', options: ['2', '3', '4', '5'], answer: 2,
+    hint: 'Add the equations to eliminate y.', explanation: 'Adding gives 3x = 12, so x = 4.'
+  },
+  {
+    id: 'alg-07', domain: 'algebra', skill: 'Function notation', difficulty: 'medium',
+    prompt: 'If f(x) = 4x − 3 and f(k) = 21, what is k?', options: ['4', '5', '6', '7'], answer: 2,
+    hint: 'Replace x with k and solve 4k − 3 = 21.', explanation: '4k − 3 = 21 gives 4k = 24, so k = 6.'
+  },
+  {
+    id: 'alg-08', domain: 'algebra', skill: 'Linear equations in context', difficulty: 'medium',
+    prompt: 'A gym charges a $25 sign-up fee plus $18 per month. If a member paid $133 total, for how many months did they belong?', options: ['5', '6', '7', '8'], answer: 1,
+    hint: 'Subtract the fixed fee, then divide by the monthly fee.', explanation: '(133 − 25) / 18 = 6 months.'
+  },
+  {
+    id: 'alg-09', domain: 'algebra', skill: 'Inequalities in context', difficulty: 'medium',
+    prompt: 'A student has $90 and spends $12 on each museum ticket. What is the greatest number of tickets the student can buy while keeping at least $6?', options: ['6', '7', '8', '9'], answer: 1,
+    hint: '12t + 6 ≤ 90.', explanation: '12t ≤ 84, so t ≤ 7.'
+  },
+  {
+    id: 'alg-10', domain: 'algebra', skill: 'Linear models', difficulty: 'advanced',
+    prompt: 'A line has y-intercept 14 and passes through (4, 26). What is its slope?', options: ['2', '3', '4', '6'], answer: 1,
+    hint: 'Use 26 = 4m + 14.', explanation: '12 = 4m, so m = 3.'
+  },
+  {
+    id: 'alg-11', domain: 'algebra', skill: 'Equivalent linear expressions', difficulty: 'advanced',
+    prompt: 'Which expression is equivalent to 3(2x − 5) − 2(x + 4)?', options: ['4x − 7', '4x − 23', '8x − 7', '8x − 23'], answer: 1,
+    hint: 'Distribute before combining like terms.', explanation: '6x − 15 − 2x − 8 = 4x − 23.'
+  },
+  {
+    id: 'adv-06', domain: 'advanced', skill: 'Quadratic factors', difficulty: 'foundation', diagnostic: true,
+    prompt: 'If x² + 2x − 15 = 0, which could be a value of x?', options: ['−6', '−5', '3', '5'], answer: 1,
+    hint: 'Factor using two numbers with product −15 and sum 2.', explanation: '(x + 5)(x − 3) = 0, so x = −5 or 3.'
+  },
+  {
+    id: 'adv-07', domain: 'advanced', skill: 'Quadratic vertex', difficulty: 'medium',
+    prompt: 'What is the x-coordinate of the vertex of y = x² − 8x + 11?', options: ['−8', '−4', '4', '8'], answer: 2,
+    hint: 'For ax² + bx + c, the vertex x-coordinate is −b/(2a).', explanation: '−(−8)/(2) = 4.'
+  },
+  {
+    id: 'adv-08', domain: 'advanced', skill: 'Exponential decay', difficulty: 'medium',
+    prompt: 'A $1,200 laptop loses 20% of its value each year. Which expression gives its value after t years?', options: ['1200(0.2)^t', '1200(0.8)^t', '1200 − 0.8t', '1200(1.2)^t'], answer: 1,
+    hint: 'After losing 20%, 80% remains each year.', explanation: 'The value is multiplied by 0.8 each year: 1200(0.8)^t.'
+  },
+  {
+    id: 'adv-09', domain: 'advanced', skill: 'Polynomial zeros', difficulty: 'medium',
+    prompt: 'If p(x) = (x − 2)(x + 6), what is p(2)?', options: ['−12', '0', '4', '16'], answer: 1,
+    hint: 'One factor becomes zero when x = 2.', explanation: 'p(2) = (2 − 2)(2 + 6) = 0.'
+  },
+  {
+    id: 'adv-10', domain: 'advanced', skill: 'Rational equations', difficulty: 'advanced',
+    prompt: 'If 1/x + 1/3 = 1/2, what is x?', options: ['2', '3', '6', '9'], answer: 2,
+    hint: 'Subtract 1/3 from both sides, then take the reciprocal.', explanation: '1/x = 1/6, so x = 6.'
+  },
+  {
+    id: 'adv-11', domain: 'advanced', skill: 'Radical expressions', difficulty: 'advanced',
+    prompt: 'What is the simplified value of √50 − √8?', options: ['√42', '2√2', '3√2', '7√2'], answer: 2,
+    hint: 'Rewrite √50 as 5√2 and √8 as 2√2.', explanation: '5√2 − 2√2 = 3√2.'
+  },
+  {
+    id: 'adv-12', domain: 'advanced', skill: 'Equivalent nonlinear expressions', difficulty: 'advanced',
+    prompt: 'Which expression is equivalent to (x + 4)² − 16?', options: ['x² + 4x', 'x² + 8x', 'x² + 8x + 16', 'x² + 16'], answer: 1,
+    hint: 'Expand the square, then subtract 16.', explanation: 'x² + 8x + 16 − 16 = x² + 8x.'
+  },
+  {
+    id: 'adv-13', domain: 'advanced', skill: 'Systems with nonlinear equations', difficulty: 'advanced',
+    prompt: 'If y = x² and y = 9, which positive value of x satisfies both equations?', options: ['1', '3', '6', '9'], answer: 1,
+    hint: 'Set x² equal to 9, then choose the positive solution.', explanation: 'x² = 9, so x = 3 or −3; the positive value is 3.'
+  },
+  {
+    id: 'adv-14', domain: 'advanced', skill: 'Function composition', difficulty: 'advanced',
+    prompt: 'If f(x) = x + 2 and g(x) = 3x, what is f(g(4))?', options: ['12', '14', '18', '20'], answer: 1,
+    hint: 'Evaluate g(4) first, then put that result into f.', explanation: 'g(4) = 12 and f(12) = 14.'
+  },
+  {
+    id: 'geo-05', domain: 'geometry', skill: 'Circle area', difficulty: 'foundation',
+    prompt: 'A circle has radius 6. What is its area in terms of π?', options: ['6π', '12π', '18π', '36π'], answer: 3,
+    hint: 'Use A = πr².', explanation: 'A = π(6²) = 36π.'
+  },
+  {
+    id: 'geo-06', domain: 'geometry', skill: 'Right triangles', difficulty: 'foundation', diagnostic: true,
+    prompt: 'A right triangle has legs 5 and 12. What is the hypotenuse?', options: ['11', '13', '15', '17'], answer: 1,
+    hint: 'Recognize the 5-12-13 Pythagorean triple.', explanation: '5² + 12² = 169, so the hypotenuse is 13.'
+  },
+  {
+    id: 'geo-07', domain: 'geometry', skill: 'Similar triangles', difficulty: 'medium',
+    prompt: 'Two similar triangles have corresponding side lengths 8 and 12. If the shorter triangle has perimeter 30, what is the perimeter of the larger triangle?', options: ['36', '40', '45', '48'], answer: 2,
+    hint: 'The scale factor is 12/8.', explanation: '30 × 12/8 = 45.'
+  },
+  {
+    id: 'geo-08', domain: 'geometry', skill: 'Volume', difficulty: 'medium',
+    prompt: 'A rectangular prism measures 3 by 5 by 8. What is its volume?', options: ['16', '40', '120', '240'], answer: 2,
+    hint: 'Multiply length, width, and height.', explanation: '3 × 5 × 8 = 120.'
+  },
+  {
+    id: 'geo-09', domain: 'geometry', skill: 'Angles', difficulty: 'medium',
+    prompt: 'The angles of a triangle are x°, 2x°, and 3x°. What is the measure of the largest angle?', options: ['30°', '60°', '90°', '120°'], answer: 2,
+    hint: 'The angles of a triangle sum to 180°.', explanation: '6x = 180, so x = 30 and the largest angle is 90°.'
+  },
+  {
+    id: 'geo-10', domain: 'geometry', skill: 'Coordinate geometry', difficulty: 'advanced',
+    prompt: 'What is the distance between (1, 2) and (7, 10)?', options: ['8', '10', '12', '14'], answer: 1,
+    hint: 'Use the distance formula with differences 6 and 8.', explanation: '√(6² + 8²) = √100 = 10.'
+  },
+  {
+    id: 'geo-11', domain: 'geometry', skill: 'Circle equations', difficulty: 'advanced',
+    prompt: 'A circle centered at (2, −3) has radius 4. Which is its equation?', options: ['(x + 2)² + (y − 3)² = 4', '(x − 2)² + (y + 3)² = 16', '(x − 2)² + (y − 3)² = 4', '(x + 2)² + (y + 3)² = 16'], answer: 1,
+    hint: 'Use (x − h)² + (y − k)² = r².', explanation: 'Substitute h = 2, k = −3, and r² = 16.'
+  },
+  {
+    id: 'geo-12', domain: 'geometry', skill: 'Trigonometry', difficulty: 'medium',
+    prompt: 'In a right triangle, cos θ = 4/5 and the hypotenuse is 25. What is the adjacent side?', options: ['15', '18', '20', '24'], answer: 2,
+    hint: 'cos θ = adjacent/hypotenuse.', explanation: 'Adjacent = 25 × 4/5 = 20.'
+  },
+  {
+    id: 'geo-13', domain: 'geometry', skill: 'Trigonometry', difficulty: 'advanced',
+    prompt: 'A right triangle has opposite side 7 and adjacent side 24 relative to θ. What is tan θ?', options: ['7/24', '7/25', '24/7', '25/7'], answer: 0,
+    hint: 'Tangent is opposite divided by adjacent.', explanation: 'tan θ = 7/24.'
+  },
+  {
+    id: 'geo-14', domain: 'geometry', skill: 'Area and scale', difficulty: 'advanced',
+    prompt: 'A square has area 144. What is the perimeter of the square?', options: ['12', '24', '48', '576'], answer: 2,
+    hint: 'Find the side length by taking the square root of the area.', explanation: 'The side is 12, so the perimeter is 4 × 12 = 48.'
+  },
+  {
+    id: 'geo-15', domain: 'geometry', skill: 'Arc measure', difficulty: 'advanced',
+    prompt: 'A central angle measures 90° in a circle. What fraction of the circle’s circumference is its intercepted arc?', options: ['1/8', '1/4', '1/2', '3/4'], answer: 1,
+    hint: 'Compare 90° with the full 360°.', explanation: '90/360 = 1/4.'
+  }];
 
 const DIAGNOSTIC_IDS = QUESTION_BANK.filter(question => question.diagnostic).map(question => question.id);
 const questionById = id => QUESTION_BANK.find(question => question.id === id);
