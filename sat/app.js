@@ -1,6 +1,9 @@
 'use strict';
 
-const STORAGE_KEY = 'orbitSatMathV1';
+const LEGACY_STORAGE_KEY = 'orbitSatMathV1';
+const USERS_KEY = 'orbitSatMathUsers';
+const SESSION_KEY = 'orbitSatMathCurrentUser';
+const stateKey = id => `orbitSatMathV1:${id}`;
 
 const DOMAINS = {
   algebra: { name: 'Algebra', short: 'Linear equations & functions', symbol: 'x', weight: 35 },
@@ -2207,6 +2210,8 @@ QUESTION_BANK.push(...[
   }
 ]);
 
+QUESTION_BANK.push(...(window.ORBIT_EXTRA_QUESTIONS || []));
+
 const DIAGNOSTIC_IDS = QUESTION_BANK.filter(question => question.diagnostic).map(question => question.id);
 const questionById = id => QUESTION_BANK.find(question => question.id === id);
 
@@ -2221,9 +2226,44 @@ function createDefaultState() {
   };
 }
 
-function loadState() {
+function loadUsers() {
   try {
-    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    const saved = JSON.parse(localStorage.getItem(USERS_KEY));
+    if (Array.isArray(saved)) return saved;
+  } catch (error) {
+    console.warn('Orbit recovered from an invalid learner list.', error);
+  }
+  const legacy = localStorage.getItem(LEGACY_STORAGE_KEY);
+  if (!legacy) return [];
+  let name = 'Student';
+  try { name = JSON.parse(legacy)?.profile?.name || name; } catch {}
+  const migrated = [{ id: crypto.randomUUID(), name, pinHash: null }];
+  localStorage.setItem(stateKey(migrated[0].id), legacy);
+  localStorage.setItem(USERS_KEY, JSON.stringify(migrated));
+  localStorage.removeItem(LEGACY_STORAGE_KEY);
+  return migrated;
+}
+
+function saveUsers() {
+  localStorage.setItem(USERS_KEY, JSON.stringify(users));
+}
+
+function initialUserId() {
+  const remembered = sessionStorage.getItem(SESSION_KEY);
+  if (users.some(user => user.id === remembered)) return remembered;
+  return remembered === null && users.length === 1 && !users[0].pinHash ? users[0].id : null;
+}
+
+// ponytail: PIN is a per-device lock between learners, not account security; real accounts need a backend.
+async function hashPin(id, pin) {
+  const bytes = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(`${id}:${pin}`));
+  return Array.from(new Uint8Array(bytes), b => b.toString(16).padStart(2, '0')).join('');
+}
+
+function loadState() {
+  if (!currentUserId) return createDefaultState();
+  try {
+    const saved = JSON.parse(localStorage.getItem(stateKey(currentUserId)));
     if (!saved || typeof saved !== 'object') return createDefaultState();
     return {
       ...createDefaultState(),
@@ -2238,6 +2278,8 @@ function loadState() {
   }
 }
 
+let users = loadUsers();
+let currentUserId = initialUserId();
 let state = loadState();
 let currentQuestion = null;
 let selectedAnswer = null;
@@ -2249,7 +2291,8 @@ let diagnosticAnswers = [];
 let toastTimeout = null;
 
 function saveState() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  if (!currentUserId) return;
+  localStorage.setItem(stateKey(currentUserId), JSON.stringify(state));
 }
 
 function clamp(value, min, max) {
@@ -2641,11 +2684,18 @@ function finishDiagnostic() {
   }).join('')}</div><button class="primary-button" type="button" id="finish-diagnostic">Start my first focused drill</button></div>`;
 }
 
-function completeOnboarding() {
+async function completeOnboarding() {
   const name = document.querySelector('#learner-name').value.trim();
+  const pin = document.querySelector('#learner-pin').value;
   const startingScore = Number(document.querySelector('#starting-score').value);
   const targetScore = Number(document.querySelector('#target-score').value);
   if (!name || startingScore < 200 || startingScore > 800 || targetScore < 200 || targetScore > 800) return false;
+  if (!currentUserId) {
+    const id = crypto.randomUUID();
+    users.push({ id, name, pinHash: pin ? await hashPin(id, pin) : null });
+    saveUsers();
+    signIn(id);
+  }
   state.profile = { name, startingScore, targetScore, testDate: document.querySelector('#test-date').value };
   saveState();
   document.querySelector('#onboarding-dialog').close();
@@ -2663,7 +2713,7 @@ function populateSettings() {
   document.querySelector('#goal-score-setting').value = state.profile.targetScore;
 }
 
-function saveSettings() {
+async function saveSettings() {
   const name = document.querySelector('#learner-name-setting').value.trim();
   const startingScore = Number(document.querySelector('#start-score-setting').value);
   const targetScore = Number(document.querySelector('#goal-score-setting').value);
@@ -2673,6 +2723,13 @@ function saveSettings() {
   }
   state.profile = { name, startingScore, targetScore, testDate: document.querySelector('#test-date-setting').value };
   saveState();
+  const user = users.find(item => item.id === currentUserId);
+  const pin = document.querySelector('#pin-setting').value;
+  if (pin && !/^\d{4,8}$/.test(pin)) { showToast('PIN must be 4 to 8 digits.'); return; }
+  user.name = name;
+  if (pin) user.pinHash = await hashPin(user.id, pin);
+  saveUsers();
+  document.querySelector('#pin-setting').value = '';
   document.querySelector('#profile-panel').hidden = true;
   document.querySelector('#profile-button').setAttribute('aria-expanded', 'false');
   renderHome();
@@ -2691,7 +2748,7 @@ function handleClick(event) {
 
   if (event.target.closest('[data-next-onboarding]')) {
     const name = document.querySelector('#learner-name');
-    if (!name.reportValidity()) return;
+    if (!name.reportValidity() || !document.querySelector('#learner-pin').reportValidity()) return;
     document.querySelector('[data-onboarding-step="1"]').classList.remove('active');
     document.querySelector('[data-onboarding-step="2"]').classList.add('active');
     return;
@@ -2714,12 +2771,27 @@ function handleClick(event) {
   }
   if (event.target.closest('#save-settings')) return saveSettings();
   if (event.target.closest('#reset-data')) {
-    if (!confirm('Erase all Orbit learner settings and study history from this device?')) return;
-    localStorage.removeItem(STORAGE_KEY);
-    state = createDefaultState();
+    if (!confirm(`Delete ${state.profile?.name || 'this learner'} and all of their study history from this device?`)) return;
+    localStorage.removeItem(stateKey(currentUserId));
+    users = users.filter(user => user.id !== currentUserId);
+    saveUsers();
+    sessionStorage.removeItem(SESSION_KEY);
     location.reload();
     return;
   }
+  if (event.target.closest('#switch-learner')) {
+    sessionStorage.setItem(SESSION_KEY, '');
+    location.reload();
+    return;
+  }
+  const learner = event.target.closest('[data-learner]');
+  if (learner) return chooseLearner(learner.dataset.learner);
+  if (event.target.closest('#add-learner')) {
+    document.querySelector('#login-dialog').close();
+    document.querySelector('#onboarding-dialog').showModal();
+    return;
+  }
+  if (event.target.closest('#pin-cancel')) return renderLogin();
   if (event.target.closest('#mission-button')) return state.diagnostic.completed ? (routeTo('practice'), chooseQuestion()) : openDiagnostic();
   if (event.target.closest('#open-diagnostic')) return openDiagnostic();
   if (event.target.closest('#begin-diagnostic')) { diagnosticIndex = 0; renderDiagnostic(); return; }
@@ -2752,6 +2824,64 @@ function handleClick(event) {
   if (event.target.closest('#print-progress')) return window.print();
 }
 
+function signIn(id) {
+  currentUserId = id;
+  sessionStorage.setItem(SESSION_KEY, id);
+  state = loadState();
+}
+
+let pendingLearnerId = null;
+
+function renderLogin() {
+  pendingLearnerId = null;
+  document.querySelector('#pin-form').hidden = true;
+  document.querySelector('#learner-list').hidden = false;
+  document.querySelector('#add-learner').hidden = false;
+  document.querySelector('#learner-list').innerHTML = users.map(user =>
+    `<button class="radio-card learner-card" type="button" data-learner="${escapeHtml(user.id)}"><span><strong>${escapeHtml(user.name)}</strong><small>${user.pinHash ? 'PIN protected' : 'Tap to continue'}</small></span></button>`
+  ).join('');
+}
+
+function openLogin() {
+  renderLogin();
+  document.querySelector('#login-dialog').showModal();
+}
+
+function enterApp() {
+  document.querySelector('#login-dialog').close();
+  populateSettings();
+  renderHome();
+  renderReview();
+  renderProgress();
+  routeTo(location.hash.slice(1) || 'home');
+  showToast(`Welcome back, ${state.profile?.name || 'learner'}.`);
+}
+
+function chooseLearner(id) {
+  const user = users.find(item => item.id === id);
+  if (!user) return;
+  if (!user.pinHash) { signIn(id); return enterApp(); }
+  pendingLearnerId = id;
+  document.querySelector('#learner-list').hidden = true;
+  document.querySelector('#add-learner').hidden = true;
+  document.querySelector('#pin-form').hidden = false;
+  document.querySelector('#pin-name').textContent = user.name;
+  const input = document.querySelector('#pin-input');
+  input.value = '';
+  input.focus();
+}
+
+async function submitPin() {
+  const user = users.find(item => item.id === pendingLearnerId);
+  if (!user) return renderLogin();
+  if (await hashPin(user.id, document.querySelector('#pin-input').value) !== user.pinHash) {
+    showToast('That PIN doesn’t match.');
+    return;
+  }
+  signIn(user.id);
+  enterApp();
+}
+
 function init() {
   document.addEventListener('click', handleClick);
   document.querySelector('#onboarding-form').addEventListener('submit', event => {
@@ -2765,12 +2895,23 @@ function init() {
     const number = Number(event.key);
     if (number >= 1 && number <= 4) selectAnswer(number - 1);
   });
+  document.querySelector('#pin-form').addEventListener('submit', event => {
+    event.preventDefault();
+    submitPin();
+  });
+  document.querySelector('#login-dialog').addEventListener('cancel', event => event.preventDefault());
+  document.querySelector('#onboarding-dialog').addEventListener('cancel', event => {
+    if (currentUserId) return;
+    event.preventDefault();
+    if (users.length) { document.querySelector('#onboarding-dialog').close(); openLogin(); }
+  });
   populateSettings();
   renderHome();
   renderReview();
   renderProgress();
   routeTo(location.hash.slice(1) || 'home');
-  if (!state.profile) document.querySelector('#onboarding-dialog').showModal();
+  if (!currentUserId && users.length) openLogin();
+  else if (!state.profile) document.querySelector('#onboarding-dialog').showModal();
   if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) navigator.serviceWorker.register('./sw.js').catch(() => {});
 }
 

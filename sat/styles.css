@@ -346,3 +346,10 @@ dialog::backdrop { background: rgba(13, 22, 43, .62); backdrop-filter: blur(7px)
   #view-progress { display: block !important; }
   .progress-panel, .metric-card, .checkpoint-card { break-inside: avoid; box-shadow: none; }
 }
+#login-dialog { padding: clamp(25px, 6vw, 48px); }
+#login-dialog form { padding: 0; }
+.learner-list { margin-top: 18px; }
+.learner-card { width: 100%; background: transparent; text-align: left; color: inherit; font: inherit; }
+.learner-card strong { font-size: 15px; }
+.learner-card small { font-size: 11px; }
+.text-button.full { width: 100%; margin-top: 8px; }

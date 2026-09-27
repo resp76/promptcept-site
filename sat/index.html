@@ -9,6 +9,7 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="styles.css">
+  <script src="questions-extra.js" defer></script>
   <script src="app.js" defer></script>
 </head>
 <body>
@@ -43,9 +44,12 @@
         <label>Starting score<input id="start-score-setting" type="number" min="200" max="800" step="10"></label>
         <label>Goal score<input id="goal-score-setting" type="number" min="200" max="800" step="10"></label>
       </div>
+      <label for="pin-setting">New PIN <small>Optional, 4–8 digits. Leave blank to keep the current one.</small></label>
+      <input id="pin-setting" type="password" inputmode="numeric" pattern="\d{4,8}" maxlength="8" autocomplete="new-password">
       <button class="primary-button full" type="button" id="save-settings">Save changes</button>
-      <button class="danger-link" type="button" id="reset-data">Erase all study data</button>
-      <p class="privacy-note">Progress is stored only on this device. Orbit does not collect or sell learner data.</p>
+      <button class="text-button full" type="button" id="switch-learner">Switch learner</button>
+      <button class="danger-link" type="button" id="reset-data">Delete this learner</button>
+      <p class="privacy-note">Each learner’s progress is stored only on this device. Orbit does not collect or sell learner data.</p>
     </aside>
 
     <main id="main-content" tabindex="-1">
@@ -159,6 +163,8 @@
         <p>We’ll build a private, focused plan from where you are now to where you want to go.</p>
         <label for="learner-name">What should we call you?</label>
         <input id="learner-name" name="learnerName" maxlength="24" placeholder="First name" autocomplete="given-name" required>
+        <label for="learner-pin">PIN <small>Optional, 4–8 digits, keeps other learners on this device out of your profile</small></label>
+        <input id="learner-pin" name="learnerPin" type="password" inputmode="numeric" pattern="\d{4,8}" maxlength="8" autocomplete="new-password">
         <button class="primary-button full" type="button" data-next-onboarding>Continue</button>
       </div>
       <div class="onboarding-step" data-onboarding-step="2">
@@ -170,6 +176,19 @@
         <div class="onboarding-actions"><button class="text-button" type="button" data-prev-onboarding>Back</button><button class="primary-button" type="submit">Build my study plan</button></div>
       </div>
     </form>
+  </dialog>
+
+  <dialog class="onboarding" id="login-dialog" aria-labelledby="login-title">
+    <div class="onboarding-brand"><span class="brand-orbit" aria-hidden="true"><i></i></span><strong>Orbit</strong></div>
+    <span class="eyebrow">Who’s studying?</span>
+    <h1 id="login-title">Choose your learner profile</h1>
+    <div class="learner-list" id="learner-list"></div>
+    <form id="pin-form" hidden>
+      <label for="pin-input">PIN for <span id="pin-name"></span></label>
+      <input id="pin-input" type="password" inputmode="numeric" pattern="\d{4,8}" maxlength="8" autocomplete="current-password" required>
+      <div class="onboarding-actions"><button class="text-button" type="button" id="pin-cancel">Back</button><button class="primary-button" type="submit">Log in</button></div>
+    </form>
+    <button class="primary-button full" type="button" id="add-learner">Add a new learner</button>
   </dialog>
 
   <dialog class="diagnostic-dialog" id="diagnostic-dialog" aria-labelledby="diagnostic-title">

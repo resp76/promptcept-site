@@ -34,7 +34,9 @@ Then use `npm run ios:open` or `npm run android:open` to build in Xcode or Andro
 - The diagnostic uses eight original questions spanning all four SAT Math domains.
 - Smart practice prioritizes the learner’s weaker domains.
 - Hints precede explanations, and missed questions enter a retry journal.
-- Progress, goals, and study history are stored only in local browser/app storage.
+- Multiple learners can share a device. Each has a separate profile with an optional PIN. Progress, goals, and study history are stored only in local browser/app storage, per learner.
+- 566 questions: the originals in `app.js` plus 400 generated ones in `questions-extra.js` (`node sat/tools/generate-questions.mjs` rebuilds them).
+- See `CHANGELOG.md` for the full change history.
 - Score estimates are directional coaching indicators, not official SAT scores.
 - Official scored checkpoints should be completed in College Board Bluebook.
 
