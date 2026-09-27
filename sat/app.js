@@ -151,7 +151,7 @@ const QUESTION_BANK = [
     options: ['15', '18', '20', '24'], answer: 2,
     hint: 'sin θ = opposite/hypotenuse. Set 3/5 = 12/h.',
     explanation: '3/5 = 12/h. Cross-multiplying gives 3h = 60, so h = 20.'
-  }
+  },
 
   {
     id: 'alg-06', domain: 'algebra', skill: 'Systems of equations', difficulty: 'foundation', diagnostic: true,
@@ -185,7 +185,7 @@ const QUESTION_BANK = [
   },
   {
     id: 'adv-06', domain: 'advanced', skill: 'Quadratic factors', difficulty: 'foundation', diagnostic: true,
-    prompt: 'If x² + 2x − 15 = 0, which could be a value of x?', options: ['−6', '−5', '3', '5'], answer: 1,
+    prompt: 'If x² + 2x − 15 = 0, which could be a value of x?', options: ['−6', '−5', '2', '5'], answer: 1,
     hint: 'Factor using two numbers with product −15 and sum 2.', explanation: '(x + 5)(x − 3) = 0, so x = −5 or 3.'
   },
   {
@@ -283,6 +283,1929 @@ const QUESTION_BANK = [
     prompt: 'A central angle measures 90° in a circle. What fraction of the circle’s circumference is its intercepted arc?', options: ['1/8', '1/4', '1/2', '3/4'], answer: 1,
     hint: 'Compare 90° with the full 360°.', explanation: '90/360 = 1/4.'
   }];
+
+QUESTION_BANK.push(...[
+  {
+    "id": "expanded-1",
+    "domain": "algebra",
+    "skill": "Linear equations",
+    "difficulty": "foundation",
+    "prompt": "Solve 3x + 8 = 23. What is x?",
+    "options": [
+      "5",
+      "3",
+      "4",
+      "6"
+    ],
+    "answer": 0,
+    "hint": "Undo addition before multiplication.",
+    "explanation": "Subtract 8: 3x = 15. Divide by 3: x = 5."
+  },
+  {
+    "id": "expanded-2",
+    "domain": "algebra",
+    "skill": "Distributive property",
+    "difficulty": "foundation",
+    "prompt": "If 3(x − 1) = 12, what is x?",
+    "options": [
+      "3",
+      "5",
+      "4",
+      "6"
+    ],
+    "answer": 1,
+    "hint": "Divide both sides before isolating x.",
+    "explanation": "x − 1 = 4; adding 1 gives 5."
+  },
+  {
+    "id": "expanded-3",
+    "domain": "algebra",
+    "skill": "Systems of equations",
+    "difficulty": "foundation",
+    "prompt": "If x + y = 13 and x − y = -3, what is x?",
+    "options": [
+      "3",
+      "4",
+      "5",
+      "6"
+    ],
+    "answer": 2,
+    "hint": "Add the two equations.",
+    "explanation": "Adding eliminates y: 2x = 10, so x = 5."
+  },
+  {
+    "id": "expanded-4",
+    "domain": "algebra",
+    "skill": "Slope",
+    "difficulty": "foundation",
+    "prompt": "A line passes through (1, 11) and (4, 20). What is its slope?",
+    "options": [
+      "1",
+      "2",
+      "4",
+      "3"
+    ],
+    "answer": 3,
+    "hint": "Divide the change in y by the change in x.",
+    "explanation": "Slope = (20 − 11)/(4 − 1) = 9/3 = 3."
+  },
+  {
+    "id": "expanded-5",
+    "domain": "algebra",
+    "skill": "Intercepts",
+    "difficulty": "foundation",
+    "prompt": "The line y = 3x + b passes through (2, 14). What is b?",
+    "options": [
+      "8",
+      "6",
+      "7",
+      "9"
+    ],
+    "answer": 0,
+    "hint": "Substitute the point into the equation.",
+    "explanation": "14 = 6 + b, giving b = 8."
+  },
+  {
+    "id": "expanded-6",
+    "domain": "algebra",
+    "skill": "Budget inequalities",
+    "difficulty": "foundation",
+    "prompt": "A club has $23 for supplies. After a $8 delivery charge, each kit costs $3. What is the greatest number of kits it can buy?",
+    "options": [
+      "3",
+      "5",
+      "4",
+      "6"
+    ],
+    "answer": 1,
+    "hint": "Subtract the fixed charge first.",
+    "explanation": "The kit budget is $15; 15/3 = 5 kits."
+  },
+  {
+    "id": "expanded-7",
+    "domain": "algebra",
+    "skill": "Parallel lines",
+    "difficulty": "foundation",
+    "prompt": "A line parallel to y = 3x + 8 passes through (0, 2). What is its slope?",
+    "options": [
+      "1",
+      "2",
+      "3",
+      "4"
+    ],
+    "answer": 2,
+    "hint": "Parallel nonvertical lines share a slope.",
+    "explanation": "The coefficient of x in the given line is 3, which is also the parallel line's slope."
+  },
+  {
+    "id": "expanded-8",
+    "domain": "algebra",
+    "skill": "Linear function values",
+    "difficulty": "foundation",
+    "prompt": "If f(t) = 3t − 8, what is f(5)?",
+    "options": [
+      "5",
+      "6",
+      "8",
+      "7"
+    ],
+    "answer": 3,
+    "hint": "Substitute for t, then multiply and subtract.",
+    "explanation": "f(5) = 3(5) − 8 = 7."
+  },
+  {
+    "id": "expanded-9",
+    "domain": "advanced",
+    "skill": "Quadratic roots",
+    "difficulty": "foundation",
+    "prompt": "What is the larger solution of (x − 1)(x − 5) = 0?",
+    "options": [
+      "5",
+      "3",
+      "4",
+      "6"
+    ],
+    "answer": 0,
+    "hint": "Set each factor equal to zero.",
+    "explanation": "The solutions are 1 and 5. The larger is 5."
+  },
+  {
+    "id": "expanded-10",
+    "domain": "advanced",
+    "skill": "Vertex form",
+    "difficulty": "foundation",
+    "prompt": "For f(x) = (x − 3)² + 8, at what x-value does f reach its minimum?",
+    "options": [
+      "1",
+      "3",
+      "2",
+      "4"
+    ],
+    "answer": 1,
+    "hint": "A square is smallest when its value is zero.",
+    "explanation": "The square is zero at x = 3, so that is the minimizing x-value."
+  },
+  {
+    "id": "expanded-11",
+    "domain": "advanced",
+    "skill": "Quadratic maximum",
+    "difficulty": "foundation",
+    "prompt": "What is the maximum value of g(x) = −3(x − 2)² + 8?",
+    "options": [
+      "6",
+      "7",
+      "8",
+      "9"
+    ],
+    "answer": 2,
+    "hint": "The squared term cannot be negative.",
+    "explanation": "The term −3(x − 2)² is at most zero. At x = 2, g(x) = 8, the maximum."
+  },
+  {
+    "id": "expanded-12",
+    "domain": "advanced",
+    "skill": "Difference of squares",
+    "difficulty": "foundation",
+    "prompt": "For x ≠ 3, (x² − 9)/(x − 3) = x + k. What is k?",
+    "options": [
+      "1",
+      "2",
+      "4",
+      "3"
+    ],
+    "answer": 3,
+    "hint": "Factor the numerator.",
+    "explanation": "The numerator is (x − 3)(x + 3); canceling leaves x + 3, so k = 3."
+  },
+  {
+    "id": "expanded-13",
+    "domain": "advanced",
+    "skill": "Exponential growth",
+    "difficulty": "foundation",
+    "prompt": "A culture begins with 30 cells and doubles every hour. How many cells are present after 3 hours?",
+    "options": [
+      "240",
+      "238",
+      "239",
+      "241"
+    ],
+    "answer": 0,
+    "hint": "Three doubling periods give a factor of 2³.",
+    "explanation": "30 × 2³ = 30 × 8 = 240."
+  },
+  {
+    "id": "expanded-14",
+    "domain": "advanced",
+    "skill": "Radical equations",
+    "difficulty": "foundation",
+    "prompt": "If √(x + 8) = 6, what is x?",
+    "options": [
+      "26",
+      "28",
+      "27",
+      "29"
+    ],
+    "answer": 1,
+    "hint": "Square both sides and then subtract.",
+    "explanation": "x + 8 = 36, so x = 28. This gives a nonnegative radicand and satisfies the original equation."
+  },
+  {
+    "id": "expanded-15",
+    "domain": "advanced",
+    "skill": "Quadratic coefficients",
+    "difficulty": "foundation",
+    "prompt": "The expression (x + 3)(x + 8) equals x² + kx + 24. What is k?",
+    "options": [
+      "9",
+      "10",
+      "11",
+      "12"
+    ],
+    "answer": 2,
+    "hint": "The two middle terms combine.",
+    "explanation": "Expanding gives x² + 3x + 8x + 24, so k = 11."
+  },
+  {
+    "id": "expanded-16",
+    "domain": "advanced",
+    "skill": "Exponent rules",
+    "difficulty": "foundation",
+    "prompt": "For z > 0, z^7/z^3 = z^k. What is k?",
+    "options": [
+      "2",
+      "3",
+      "5",
+      "4"
+    ],
+    "answer": 3,
+    "hint": "Subtract exponents when dividing powers with the same base.",
+    "explanation": "k = 7 − 3 = 4."
+  },
+  {
+    "id": "expanded-17",
+    "domain": "geometry",
+    "skill": "Triangle area",
+    "difficulty": "foundation",
+    "prompt": "A triangle has base 6 cm and perpendicular height 8 cm. What is its area in square centimeters?",
+    "options": [
+      "24",
+      "22",
+      "23",
+      "25"
+    ],
+    "answer": 0,
+    "hint": "Use half the base times the height.",
+    "explanation": "Area = ½ × 6 × 8 = 24."
+  },
+  {
+    "id": "expanded-18",
+    "domain": "geometry",
+    "skill": "Pythagorean theorem",
+    "difficulty": "foundation",
+    "prompt": "A right triangle has legs 3 and 4. What is the hypotenuse?",
+    "options": [
+      "3",
+      "5",
+      "4",
+      "6"
+    ],
+    "answer": 1,
+    "hint": "Use the Pythagorean theorem.",
+    "explanation": "c² = 9 + 16 = 25; c = 5."
+  },
+  {
+    "id": "expanded-19",
+    "domain": "geometry",
+    "skill": "Circle area",
+    "difficulty": "foundation",
+    "prompt": "A circle has radius 3. Its area is kπ. What is k?",
+    "options": [
+      "7",
+      "8",
+      "9",
+      "10"
+    ],
+    "answer": 2,
+    "hint": "Use A = πr².",
+    "explanation": "A = π × 3² = 9π, so k = 9."
+  },
+  {
+    "id": "expanded-20",
+    "domain": "geometry",
+    "skill": "Cylinder volume",
+    "difficulty": "foundation",
+    "prompt": "A cylinder has radius 3 and height 8. Its volume is kπ. What is k?",
+    "options": [
+      "70",
+      "71",
+      "73",
+      "72"
+    ],
+    "answer": 3,
+    "hint": "Use V = πr²h.",
+    "explanation": "V = π × 3² × 8 = 72π."
+  },
+  {
+    "id": "expanded-21",
+    "domain": "geometry",
+    "skill": "Sine",
+    "difficulty": "foundation",
+    "prompt": "In a right triangle, sin θ = 3/5. The hypotenuse is 15. What is the side opposite θ?",
+    "options": [
+      "9",
+      "7",
+      "8",
+      "10"
+    ],
+    "answer": 0,
+    "hint": "Sine is opposite divided by hypotenuse.",
+    "explanation": "Opposite = (3/5) × 15 = 9."
+  },
+  {
+    "id": "expanded-22",
+    "domain": "geometry",
+    "skill": "Cosine",
+    "difficulty": "foundation",
+    "prompt": "In a right triangle, cos θ = 4/5. The hypotenuse is 40. What is the side adjacent to θ?",
+    "options": [
+      "30",
+      "32",
+      "31",
+      "33"
+    ],
+    "answer": 1,
+    "hint": "Cosine is adjacent divided by hypotenuse.",
+    "explanation": "Adjacent = (4/5) × 40 = 32."
+  },
+  {
+    "id": "expanded-23",
+    "domain": "geometry",
+    "skill": "Tangent",
+    "difficulty": "foundation",
+    "prompt": "In a right triangle, tan θ = 3/4. The side adjacent to θ is 12. What is the opposite side?",
+    "options": [
+      "7",
+      "8",
+      "9",
+      "10"
+    ],
+    "answer": 2,
+    "hint": "Tangent is opposite divided by adjacent.",
+    "explanation": "Opposite = (3/4) × 12 = 9."
+  },
+  {
+    "id": "expanded-24",
+    "domain": "geometry",
+    "skill": "Similar triangles",
+    "difficulty": "foundation",
+    "prompt": "Two similar triangles have corresponding sides 3 and 9. A second side in the smaller triangle is 8. What is the corresponding side in the larger triangle?",
+    "options": [
+      "22",
+      "23",
+      "25",
+      "24"
+    ],
+    "answer": 3,
+    "hint": "Find the ratio of corresponding sides.",
+    "explanation": "The scale factor is 9/3 = 3. The requested side is 3 × 8 = 24."
+  },
+  {
+    "id": "expanded-25",
+    "domain": "algebra",
+    "skill": "Linear equations",
+    "difficulty": "medium",
+    "prompt": "Solve 4x + 9 = 33. What is x?",
+    "options": [
+      "6",
+      "4",
+      "5",
+      "7"
+    ],
+    "answer": 0,
+    "hint": "Undo addition before multiplication.",
+    "explanation": "Subtract 9: 4x = 24. Divide by 4: x = 6."
+  },
+  {
+    "id": "expanded-26",
+    "domain": "algebra",
+    "skill": "Distributive property",
+    "difficulty": "medium",
+    "prompt": "If 4(x − 2) = 16, what is x?",
+    "options": [
+      "4",
+      "6",
+      "5",
+      "7"
+    ],
+    "answer": 1,
+    "hint": "Divide both sides before isolating x.",
+    "explanation": "x − 2 = 4; adding 2 gives 6."
+  },
+  {
+    "id": "expanded-27",
+    "domain": "algebra",
+    "skill": "Systems of equations",
+    "difficulty": "medium",
+    "prompt": "If x + y = 15 and x − y = -3, what is x?",
+    "options": [
+      "4",
+      "5",
+      "6",
+      "7"
+    ],
+    "answer": 2,
+    "hint": "Add the two equations.",
+    "explanation": "Adding eliminates y: 2x = 12, so x = 6."
+  },
+  {
+    "id": "expanded-28",
+    "domain": "algebra",
+    "skill": "Slope",
+    "difficulty": "medium",
+    "prompt": "A line passes through (1, 13) and (4, 25). What is its slope?",
+    "options": [
+      "2",
+      "3",
+      "5",
+      "4"
+    ],
+    "answer": 3,
+    "hint": "Divide the change in y by the change in x.",
+    "explanation": "Slope = (25 − 13)/(4 − 1) = 12/3 = 4."
+  },
+  {
+    "id": "expanded-29",
+    "domain": "algebra",
+    "skill": "Intercepts",
+    "difficulty": "medium",
+    "prompt": "The line y = 4x + b passes through (2, 17). What is b?",
+    "options": [
+      "9",
+      "7",
+      "8",
+      "10"
+    ],
+    "answer": 0,
+    "hint": "Substitute the point into the equation.",
+    "explanation": "17 = 8 + b, giving b = 9."
+  },
+  {
+    "id": "expanded-30",
+    "domain": "algebra",
+    "skill": "Budget inequalities",
+    "difficulty": "medium",
+    "prompt": "A club has $33 for supplies. After a $9 delivery charge, each kit costs $4. What is the greatest number of kits it can buy?",
+    "options": [
+      "4",
+      "6",
+      "5",
+      "7"
+    ],
+    "answer": 1,
+    "hint": "Subtract the fixed charge first.",
+    "explanation": "The kit budget is $24; 24/4 = 6 kits."
+  },
+  {
+    "id": "expanded-31",
+    "domain": "algebra",
+    "skill": "Parallel lines",
+    "difficulty": "medium",
+    "prompt": "A line parallel to y = 4x + 9 passes through (0, 2). What is its slope?",
+    "options": [
+      "2",
+      "3",
+      "4",
+      "5"
+    ],
+    "answer": 2,
+    "hint": "Parallel nonvertical lines share a slope.",
+    "explanation": "The coefficient of x in the given line is 4, which is also the parallel line's slope."
+  },
+  {
+    "id": "expanded-32",
+    "domain": "algebra",
+    "skill": "Linear function values",
+    "difficulty": "medium",
+    "prompt": "If f(t) = 4t − 9, what is f(6)?",
+    "options": [
+      "13",
+      "14",
+      "16",
+      "15"
+    ],
+    "answer": 3,
+    "hint": "Substitute for t, then multiply and subtract.",
+    "explanation": "f(6) = 4(6) − 9 = 15."
+  },
+  {
+    "id": "expanded-33",
+    "domain": "advanced",
+    "skill": "Quadratic roots",
+    "difficulty": "medium",
+    "prompt": "What is the larger solution of (x − 2)(x − 6) = 0?",
+    "options": [
+      "6",
+      "4",
+      "5",
+      "7"
+    ],
+    "answer": 0,
+    "hint": "Set each factor equal to zero.",
+    "explanation": "The solutions are 2 and 6. The larger is 6."
+  },
+  {
+    "id": "expanded-34",
+    "domain": "advanced",
+    "skill": "Vertex form",
+    "difficulty": "medium",
+    "prompt": "For f(x) = (x − 4)² + 9, at what x-value does f reach its minimum?",
+    "options": [
+      "2",
+      "4",
+      "3",
+      "5"
+    ],
+    "answer": 1,
+    "hint": "A square is smallest when its value is zero.",
+    "explanation": "The square is zero at x = 4, so that is the minimizing x-value."
+  },
+  {
+    "id": "expanded-35",
+    "domain": "advanced",
+    "skill": "Quadratic maximum",
+    "difficulty": "medium",
+    "prompt": "What is the maximum value of g(x) = −4(x − 2)² + 9?",
+    "options": [
+      "7",
+      "8",
+      "9",
+      "10"
+    ],
+    "answer": 2,
+    "hint": "The squared term cannot be negative.",
+    "explanation": "The term −4(x − 2)² is at most zero. At x = 2, g(x) = 9, the maximum."
+  },
+  {
+    "id": "expanded-36",
+    "domain": "advanced",
+    "skill": "Difference of squares",
+    "difficulty": "medium",
+    "prompt": "For x ≠ 4, (x² − 16)/(x − 4) = x + k. What is k?",
+    "options": [
+      "2",
+      "3",
+      "5",
+      "4"
+    ],
+    "answer": 3,
+    "hint": "Factor the numerator.",
+    "explanation": "The numerator is (x − 4)(x + 4); canceling leaves x + 4, so k = 4."
+  },
+  {
+    "id": "expanded-37",
+    "domain": "advanced",
+    "skill": "Exponential growth",
+    "difficulty": "medium",
+    "prompt": "A culture begins with 40 cells and doubles every hour. How many cells are present after 3 hours?",
+    "options": [
+      "320",
+      "318",
+      "319",
+      "321"
+    ],
+    "answer": 0,
+    "hint": "Three doubling periods give a factor of 2³.",
+    "explanation": "40 × 2³ = 40 × 8 = 320."
+  },
+  {
+    "id": "expanded-38",
+    "domain": "advanced",
+    "skill": "Radical equations",
+    "difficulty": "medium",
+    "prompt": "If √(x + 9) = 7, what is x?",
+    "options": [
+      "38",
+      "40",
+      "39",
+      "41"
+    ],
+    "answer": 1,
+    "hint": "Square both sides and then subtract.",
+    "explanation": "x + 9 = 49, so x = 40. This gives a nonnegative radicand and satisfies the original equation."
+  },
+  {
+    "id": "expanded-39",
+    "domain": "advanced",
+    "skill": "Quadratic coefficients",
+    "difficulty": "medium",
+    "prompt": "The expression (x + 4)(x + 9) equals x² + kx + 36. What is k?",
+    "options": [
+      "11",
+      "12",
+      "13",
+      "14"
+    ],
+    "answer": 2,
+    "hint": "The two middle terms combine.",
+    "explanation": "Expanding gives x² + 4x + 9x + 36, so k = 13."
+  },
+  {
+    "id": "expanded-40",
+    "domain": "advanced",
+    "skill": "Exponent rules",
+    "difficulty": "medium",
+    "prompt": "For z > 0, z^8/z^4 = z^k. What is k?",
+    "options": [
+      "2",
+      "3",
+      "5",
+      "4"
+    ],
+    "answer": 3,
+    "hint": "Subtract exponents when dividing powers with the same base.",
+    "explanation": "k = 8 − 4 = 4."
+  },
+  {
+    "id": "expanded-41",
+    "domain": "geometry",
+    "skill": "Triangle area",
+    "difficulty": "medium",
+    "prompt": "A triangle has base 8 cm and perpendicular height 9 cm. What is its area in square centimeters?",
+    "options": [
+      "36",
+      "34",
+      "35",
+      "37"
+    ],
+    "answer": 0,
+    "hint": "Use half the base times the height.",
+    "explanation": "Area = ½ × 8 × 9 = 36."
+  },
+  {
+    "id": "expanded-42",
+    "domain": "geometry",
+    "skill": "Pythagorean theorem",
+    "difficulty": "medium",
+    "prompt": "A right triangle has legs 6 and 8. What is the hypotenuse?",
+    "options": [
+      "8",
+      "10",
+      "9",
+      "11"
+    ],
+    "answer": 1,
+    "hint": "Use the Pythagorean theorem.",
+    "explanation": "c² = 36 + 64 = 100; c = 10."
+  },
+  {
+    "id": "expanded-43",
+    "domain": "geometry",
+    "skill": "Circle area",
+    "difficulty": "medium",
+    "prompt": "A circle has radius 4. Its area is kπ. What is k?",
+    "options": [
+      "14",
+      "15",
+      "16",
+      "17"
+    ],
+    "answer": 2,
+    "hint": "Use A = πr².",
+    "explanation": "A = π × 4² = 16π, so k = 16."
+  },
+  {
+    "id": "expanded-44",
+    "domain": "geometry",
+    "skill": "Cylinder volume",
+    "difficulty": "medium",
+    "prompt": "A cylinder has radius 4 and height 9. Its volume is kπ. What is k?",
+    "options": [
+      "142",
+      "143",
+      "145",
+      "144"
+    ],
+    "answer": 3,
+    "hint": "Use V = πr²h.",
+    "explanation": "V = π × 4² × 9 = 144π."
+  },
+  {
+    "id": "expanded-45",
+    "domain": "geometry",
+    "skill": "Sine",
+    "difficulty": "medium",
+    "prompt": "In a right triangle, sin θ = 3/5. The hypotenuse is 20. What is the side opposite θ?",
+    "options": [
+      "12",
+      "10",
+      "11",
+      "13"
+    ],
+    "answer": 0,
+    "hint": "Sine is opposite divided by hypotenuse.",
+    "explanation": "Opposite = (3/5) × 20 = 12."
+  },
+  {
+    "id": "expanded-46",
+    "domain": "geometry",
+    "skill": "Cosine",
+    "difficulty": "medium",
+    "prompt": "In a right triangle, cos θ = 4/5. The hypotenuse is 45. What is the side adjacent to θ?",
+    "options": [
+      "34",
+      "36",
+      "35",
+      "37"
+    ],
+    "answer": 1,
+    "hint": "Cosine is adjacent divided by hypotenuse.",
+    "explanation": "Adjacent = (4/5) × 45 = 36."
+  },
+  {
+    "id": "expanded-47",
+    "domain": "geometry",
+    "skill": "Tangent",
+    "difficulty": "medium",
+    "prompt": "In a right triangle, tan θ = 3/4. The side adjacent to θ is 16. What is the opposite side?",
+    "options": [
+      "10",
+      "11",
+      "12",
+      "13"
+    ],
+    "answer": 2,
+    "hint": "Tangent is opposite divided by adjacent.",
+    "explanation": "Opposite = (3/4) × 16 = 12."
+  },
+  {
+    "id": "expanded-48",
+    "domain": "geometry",
+    "skill": "Similar triangles",
+    "difficulty": "medium",
+    "prompt": "Two similar triangles have corresponding sides 4 and 12. A second side in the smaller triangle is 9. What is the corresponding side in the larger triangle?",
+    "options": [
+      "25",
+      "26",
+      "28",
+      "27"
+    ],
+    "answer": 3,
+    "hint": "Find the ratio of corresponding sides.",
+    "explanation": "The scale factor is 12/4 = 3. The requested side is 3 × 9 = 27."
+  },
+  {
+    "id": "expanded-49",
+    "domain": "algebra",
+    "skill": "Linear equations",
+    "difficulty": "medium",
+    "prompt": "Solve 5x + 10 = 45. What is x?",
+    "options": [
+      "7",
+      "5",
+      "6",
+      "8"
+    ],
+    "answer": 0,
+    "hint": "Undo addition before multiplication.",
+    "explanation": "Subtract 10: 5x = 35. Divide by 5: x = 7."
+  },
+  {
+    "id": "expanded-50",
+    "domain": "algebra",
+    "skill": "Distributive property",
+    "difficulty": "medium",
+    "prompt": "If 5(x − 3) = 20, what is x?",
+    "options": [
+      "5",
+      "7",
+      "6",
+      "8"
+    ],
+    "answer": 1,
+    "hint": "Divide both sides before isolating x.",
+    "explanation": "x − 3 = 4; adding 3 gives 7."
+  },
+  {
+    "id": "expanded-51",
+    "domain": "algebra",
+    "skill": "Systems of equations",
+    "difficulty": "medium",
+    "prompt": "If x + y = 17 and x − y = -3, what is x?",
+    "options": [
+      "5",
+      "6",
+      "7",
+      "8"
+    ],
+    "answer": 2,
+    "hint": "Add the two equations.",
+    "explanation": "Adding eliminates y: 2x = 14, so x = 7."
+  },
+  {
+    "id": "expanded-52",
+    "domain": "algebra",
+    "skill": "Slope",
+    "difficulty": "medium",
+    "prompt": "A line passes through (1, 15) and (4, 30). What is its slope?",
+    "options": [
+      "3",
+      "4",
+      "6",
+      "5"
+    ],
+    "answer": 3,
+    "hint": "Divide the change in y by the change in x.",
+    "explanation": "Slope = (30 − 15)/(4 − 1) = 15/3 = 5."
+  },
+  {
+    "id": "expanded-53",
+    "domain": "algebra",
+    "skill": "Intercepts",
+    "difficulty": "medium",
+    "prompt": "The line y = 5x + b passes through (2, 20). What is b?",
+    "options": [
+      "10",
+      "8",
+      "9",
+      "11"
+    ],
+    "answer": 0,
+    "hint": "Substitute the point into the equation.",
+    "explanation": "20 = 10 + b, giving b = 10."
+  },
+  {
+    "id": "expanded-54",
+    "domain": "algebra",
+    "skill": "Budget inequalities",
+    "difficulty": "medium",
+    "prompt": "A club has $45 for supplies. After a $10 delivery charge, each kit costs $5. What is the greatest number of kits it can buy?",
+    "options": [
+      "5",
+      "7",
+      "6",
+      "8"
+    ],
+    "answer": 1,
+    "hint": "Subtract the fixed charge first.",
+    "explanation": "The kit budget is $35; 35/5 = 7 kits."
+  },
+  {
+    "id": "expanded-55",
+    "domain": "algebra",
+    "skill": "Parallel lines",
+    "difficulty": "medium",
+    "prompt": "A line parallel to y = 5x + 10 passes through (0, 2). What is its slope?",
+    "options": [
+      "3",
+      "4",
+      "5",
+      "6"
+    ],
+    "answer": 2,
+    "hint": "Parallel nonvertical lines share a slope.",
+    "explanation": "The coefficient of x in the given line is 5, which is also the parallel line's slope."
+  },
+  {
+    "id": "expanded-56",
+    "domain": "algebra",
+    "skill": "Linear function values",
+    "difficulty": "medium",
+    "prompt": "If f(t) = 5t − 10, what is f(7)?",
+    "options": [
+      "23",
+      "24",
+      "26",
+      "25"
+    ],
+    "answer": 3,
+    "hint": "Substitute for t, then multiply and subtract.",
+    "explanation": "f(7) = 5(7) − 10 = 25."
+  },
+  {
+    "id": "expanded-57",
+    "domain": "advanced",
+    "skill": "Quadratic roots",
+    "difficulty": "medium",
+    "prompt": "What is the larger solution of (x − 3)(x − 7) = 0?",
+    "options": [
+      "7",
+      "5",
+      "6",
+      "8"
+    ],
+    "answer": 0,
+    "hint": "Set each factor equal to zero.",
+    "explanation": "The solutions are 3 and 7. The larger is 7."
+  },
+  {
+    "id": "expanded-58",
+    "domain": "advanced",
+    "skill": "Vertex form",
+    "difficulty": "medium",
+    "prompt": "For f(x) = (x − 5)² + 10, at what x-value does f reach its minimum?",
+    "options": [
+      "3",
+      "5",
+      "4",
+      "6"
+    ],
+    "answer": 1,
+    "hint": "A square is smallest when its value is zero.",
+    "explanation": "The square is zero at x = 5, so that is the minimizing x-value."
+  },
+  {
+    "id": "expanded-59",
+    "domain": "advanced",
+    "skill": "Quadratic maximum",
+    "difficulty": "medium",
+    "prompt": "What is the maximum value of g(x) = −5(x − 2)² + 10?",
+    "options": [
+      "8",
+      "9",
+      "10",
+      "11"
+    ],
+    "answer": 2,
+    "hint": "The squared term cannot be negative.",
+    "explanation": "The term −5(x − 2)² is at most zero. At x = 2, g(x) = 10, the maximum."
+  },
+  {
+    "id": "expanded-60",
+    "domain": "advanced",
+    "skill": "Difference of squares",
+    "difficulty": "medium",
+    "prompt": "For x ≠ 5, (x² − 25)/(x − 5) = x + k. What is k?",
+    "options": [
+      "3",
+      "4",
+      "6",
+      "5"
+    ],
+    "answer": 3,
+    "hint": "Factor the numerator.",
+    "explanation": "The numerator is (x − 5)(x + 5); canceling leaves x + 5, so k = 5."
+  },
+  {
+    "id": "expanded-61",
+    "domain": "advanced",
+    "skill": "Exponential growth",
+    "difficulty": "medium",
+    "prompt": "A culture begins with 50 cells and doubles every hour. How many cells are present after 3 hours?",
+    "options": [
+      "400",
+      "398",
+      "399",
+      "401"
+    ],
+    "answer": 0,
+    "hint": "Three doubling periods give a factor of 2³.",
+    "explanation": "50 × 2³ = 50 × 8 = 400."
+  },
+  {
+    "id": "expanded-62",
+    "domain": "advanced",
+    "skill": "Radical equations",
+    "difficulty": "medium",
+    "prompt": "If √(x + 10) = 8, what is x?",
+    "options": [
+      "52",
+      "54",
+      "53",
+      "55"
+    ],
+    "answer": 1,
+    "hint": "Square both sides and then subtract.",
+    "explanation": "x + 10 = 64, so x = 54. This gives a nonnegative radicand and satisfies the original equation."
+  },
+  {
+    "id": "expanded-63",
+    "domain": "advanced",
+    "skill": "Quadratic coefficients",
+    "difficulty": "medium",
+    "prompt": "The expression (x + 5)(x + 10) equals x² + kx + 50. What is k?",
+    "options": [
+      "13",
+      "14",
+      "15",
+      "16"
+    ],
+    "answer": 2,
+    "hint": "The two middle terms combine.",
+    "explanation": "Expanding gives x² + 5x + 10x + 50, so k = 15."
+  },
+  {
+    "id": "expanded-64",
+    "domain": "advanced",
+    "skill": "Exponent rules",
+    "difficulty": "medium",
+    "prompt": "For z > 0, z^9/z^5 = z^k. What is k?",
+    "options": [
+      "2",
+      "3",
+      "5",
+      "4"
+    ],
+    "answer": 3,
+    "hint": "Subtract exponents when dividing powers with the same base.",
+    "explanation": "k = 9 − 5 = 4."
+  },
+  {
+    "id": "expanded-65",
+    "domain": "geometry",
+    "skill": "Triangle area",
+    "difficulty": "medium",
+    "prompt": "A triangle has base 10 cm and perpendicular height 10 cm. What is its area in square centimeters?",
+    "options": [
+      "50",
+      "48",
+      "49",
+      "51"
+    ],
+    "answer": 0,
+    "hint": "Use half the base times the height.",
+    "explanation": "Area = ½ × 10 × 10 = 50."
+  },
+  {
+    "id": "expanded-66",
+    "domain": "geometry",
+    "skill": "Pythagorean theorem",
+    "difficulty": "medium",
+    "prompt": "A right triangle has legs 9 and 12. What is the hypotenuse?",
+    "options": [
+      "13",
+      "15",
+      "14",
+      "16"
+    ],
+    "answer": 1,
+    "hint": "Use the Pythagorean theorem.",
+    "explanation": "c² = 81 + 144 = 225; c = 15."
+  },
+  {
+    "id": "expanded-67",
+    "domain": "geometry",
+    "skill": "Circle area",
+    "difficulty": "medium",
+    "prompt": "A circle has radius 5. Its area is kπ. What is k?",
+    "options": [
+      "23",
+      "24",
+      "25",
+      "26"
+    ],
+    "answer": 2,
+    "hint": "Use A = πr².",
+    "explanation": "A = π × 5² = 25π, so k = 25."
+  },
+  {
+    "id": "expanded-68",
+    "domain": "geometry",
+    "skill": "Cylinder volume",
+    "difficulty": "medium",
+    "prompt": "A cylinder has radius 5 and height 10. Its volume is kπ. What is k?",
+    "options": [
+      "248",
+      "249",
+      "251",
+      "250"
+    ],
+    "answer": 3,
+    "hint": "Use V = πr²h.",
+    "explanation": "V = π × 5² × 10 = 250π."
+  },
+  {
+    "id": "expanded-69",
+    "domain": "geometry",
+    "skill": "Sine",
+    "difficulty": "medium",
+    "prompt": "In a right triangle, sin θ = 3/5. The hypotenuse is 25. What is the side opposite θ?",
+    "options": [
+      "15",
+      "13",
+      "14",
+      "16"
+    ],
+    "answer": 0,
+    "hint": "Sine is opposite divided by hypotenuse.",
+    "explanation": "Opposite = (3/5) × 25 = 15."
+  },
+  {
+    "id": "expanded-70",
+    "domain": "geometry",
+    "skill": "Cosine",
+    "difficulty": "medium",
+    "prompt": "In a right triangle, cos θ = 4/5. The hypotenuse is 50. What is the side adjacent to θ?",
+    "options": [
+      "38",
+      "40",
+      "39",
+      "41"
+    ],
+    "answer": 1,
+    "hint": "Cosine is adjacent divided by hypotenuse.",
+    "explanation": "Adjacent = (4/5) × 50 = 40."
+  },
+  {
+    "id": "expanded-71",
+    "domain": "geometry",
+    "skill": "Tangent",
+    "difficulty": "medium",
+    "prompt": "In a right triangle, tan θ = 3/4. The side adjacent to θ is 20. What is the opposite side?",
+    "options": [
+      "13",
+      "14",
+      "15",
+      "16"
+    ],
+    "answer": 2,
+    "hint": "Tangent is opposite divided by adjacent.",
+    "explanation": "Opposite = (3/4) × 20 = 15."
+  },
+  {
+    "id": "expanded-72",
+    "domain": "geometry",
+    "skill": "Similar triangles",
+    "difficulty": "medium",
+    "prompt": "Two similar triangles have corresponding sides 5 and 15. A second side in the smaller triangle is 10. What is the corresponding side in the larger triangle?",
+    "options": [
+      "28",
+      "29",
+      "31",
+      "30"
+    ],
+    "answer": 3,
+    "hint": "Find the ratio of corresponding sides.",
+    "explanation": "The scale factor is 15/5 = 3. The requested side is 3 × 10 = 30."
+  },
+  {
+    "id": "expanded-73",
+    "domain": "algebra",
+    "skill": "Linear equations",
+    "difficulty": "advanced",
+    "prompt": "Solve 6x + 11 = 59. What is x?",
+    "options": [
+      "8",
+      "6",
+      "7",
+      "9"
+    ],
+    "answer": 0,
+    "hint": "Undo addition before multiplication.",
+    "explanation": "Subtract 11: 6x = 48. Divide by 6: x = 8."
+  },
+  {
+    "id": "expanded-74",
+    "domain": "algebra",
+    "skill": "Distributive property",
+    "difficulty": "advanced",
+    "prompt": "If 6(x − 4) = 24, what is x?",
+    "options": [
+      "6",
+      "8",
+      "7",
+      "9"
+    ],
+    "answer": 1,
+    "hint": "Divide both sides before isolating x.",
+    "explanation": "x − 4 = 4; adding 4 gives 8."
+  },
+  {
+    "id": "expanded-75",
+    "domain": "algebra",
+    "skill": "Systems of equations",
+    "difficulty": "advanced",
+    "prompt": "If x + y = 19 and x − y = -3, what is x?",
+    "options": [
+      "6",
+      "7",
+      "8",
+      "9"
+    ],
+    "answer": 2,
+    "hint": "Add the two equations.",
+    "explanation": "Adding eliminates y: 2x = 16, so x = 8."
+  },
+  {
+    "id": "expanded-76",
+    "domain": "algebra",
+    "skill": "Slope",
+    "difficulty": "advanced",
+    "prompt": "A line passes through (1, 17) and (4, 35). What is its slope?",
+    "options": [
+      "4",
+      "5",
+      "7",
+      "6"
+    ],
+    "answer": 3,
+    "hint": "Divide the change in y by the change in x.",
+    "explanation": "Slope = (35 − 17)/(4 − 1) = 18/3 = 6."
+  },
+  {
+    "id": "expanded-77",
+    "domain": "algebra",
+    "skill": "Intercepts",
+    "difficulty": "advanced",
+    "prompt": "The line y = 6x + b passes through (2, 23). What is b?",
+    "options": [
+      "11",
+      "9",
+      "10",
+      "12"
+    ],
+    "answer": 0,
+    "hint": "Substitute the point into the equation.",
+    "explanation": "23 = 12 + b, giving b = 11."
+  },
+  {
+    "id": "expanded-78",
+    "domain": "algebra",
+    "skill": "Budget inequalities",
+    "difficulty": "advanced",
+    "prompt": "A club has $59 for supplies. After a $11 delivery charge, each kit costs $6. What is the greatest number of kits it can buy?",
+    "options": [
+      "6",
+      "8",
+      "7",
+      "9"
+    ],
+    "answer": 1,
+    "hint": "Subtract the fixed charge first.",
+    "explanation": "The kit budget is $48; 48/6 = 8 kits."
+  },
+  {
+    "id": "expanded-79",
+    "domain": "algebra",
+    "skill": "Parallel lines",
+    "difficulty": "advanced",
+    "prompt": "A line parallel to y = 6x + 11 passes through (0, 2). What is its slope?",
+    "options": [
+      "4",
+      "5",
+      "6",
+      "7"
+    ],
+    "answer": 2,
+    "hint": "Parallel nonvertical lines share a slope.",
+    "explanation": "The coefficient of x in the given line is 6, which is also the parallel line's slope."
+  },
+  {
+    "id": "expanded-80",
+    "domain": "algebra",
+    "skill": "Linear function values",
+    "difficulty": "advanced",
+    "prompt": "If f(t) = 6t − 11, what is f(8)?",
+    "options": [
+      "35",
+      "36",
+      "38",
+      "37"
+    ],
+    "answer": 3,
+    "hint": "Substitute for t, then multiply and subtract.",
+    "explanation": "f(8) = 6(8) − 11 = 37."
+  },
+  {
+    "id": "expanded-81",
+    "domain": "advanced",
+    "skill": "Quadratic roots",
+    "difficulty": "advanced",
+    "prompt": "What is the larger solution of (x − 4)(x − 8) = 0?",
+    "options": [
+      "8",
+      "6",
+      "7",
+      "9"
+    ],
+    "answer": 0,
+    "hint": "Set each factor equal to zero.",
+    "explanation": "The solutions are 4 and 8. The larger is 8."
+  },
+  {
+    "id": "expanded-82",
+    "domain": "advanced",
+    "skill": "Vertex form",
+    "difficulty": "advanced",
+    "prompt": "For f(x) = (x − 6)² + 11, at what x-value does f reach its minimum?",
+    "options": [
+      "4",
+      "6",
+      "5",
+      "7"
+    ],
+    "answer": 1,
+    "hint": "A square is smallest when its value is zero.",
+    "explanation": "The square is zero at x = 6, so that is the minimizing x-value."
+  },
+  {
+    "id": "expanded-83",
+    "domain": "advanced",
+    "skill": "Quadratic maximum",
+    "difficulty": "advanced",
+    "prompt": "What is the maximum value of g(x) = −6(x − 2)² + 11?",
+    "options": [
+      "9",
+      "10",
+      "11",
+      "12"
+    ],
+    "answer": 2,
+    "hint": "The squared term cannot be negative.",
+    "explanation": "The term −6(x − 2)² is at most zero. At x = 2, g(x) = 11, the maximum."
+  },
+  {
+    "id": "expanded-84",
+    "domain": "advanced",
+    "skill": "Difference of squares",
+    "difficulty": "advanced",
+    "prompt": "For x ≠ 6, (x² − 36)/(x − 6) = x + k. What is k?",
+    "options": [
+      "4",
+      "5",
+      "7",
+      "6"
+    ],
+    "answer": 3,
+    "hint": "Factor the numerator.",
+    "explanation": "The numerator is (x − 6)(x + 6); canceling leaves x + 6, so k = 6."
+  },
+  {
+    "id": "expanded-85",
+    "domain": "advanced",
+    "skill": "Exponential growth",
+    "difficulty": "advanced",
+    "prompt": "A culture begins with 60 cells and doubles every hour. How many cells are present after 3 hours?",
+    "options": [
+      "480",
+      "478",
+      "479",
+      "481"
+    ],
+    "answer": 0,
+    "hint": "Three doubling periods give a factor of 2³.",
+    "explanation": "60 × 2³ = 60 × 8 = 480."
+  },
+  {
+    "id": "expanded-86",
+    "domain": "advanced",
+    "skill": "Radical equations",
+    "difficulty": "advanced",
+    "prompt": "If √(x + 11) = 9, what is x?",
+    "options": [
+      "68",
+      "70",
+      "69",
+      "71"
+    ],
+    "answer": 1,
+    "hint": "Square both sides and then subtract.",
+    "explanation": "x + 11 = 81, so x = 70. This gives a nonnegative radicand and satisfies the original equation."
+  },
+  {
+    "id": "expanded-87",
+    "domain": "advanced",
+    "skill": "Quadratic coefficients",
+    "difficulty": "advanced",
+    "prompt": "The expression (x + 6)(x + 11) equals x² + kx + 66. What is k?",
+    "options": [
+      "15",
+      "16",
+      "17",
+      "18"
+    ],
+    "answer": 2,
+    "hint": "The two middle terms combine.",
+    "explanation": "Expanding gives x² + 6x + 11x + 66, so k = 17."
+  },
+  {
+    "id": "expanded-88",
+    "domain": "advanced",
+    "skill": "Exponent rules",
+    "difficulty": "advanced",
+    "prompt": "For z > 0, z^10/z^6 = z^k. What is k?",
+    "options": [
+      "2",
+      "3",
+      "5",
+      "4"
+    ],
+    "answer": 3,
+    "hint": "Subtract exponents when dividing powers with the same base.",
+    "explanation": "k = 10 − 6 = 4."
+  },
+  {
+    "id": "expanded-89",
+    "domain": "geometry",
+    "skill": "Triangle area",
+    "difficulty": "advanced",
+    "prompt": "A triangle has base 12 cm and perpendicular height 11 cm. What is its area in square centimeters?",
+    "options": [
+      "66",
+      "64",
+      "65",
+      "67"
+    ],
+    "answer": 0,
+    "hint": "Use half the base times the height.",
+    "explanation": "Area = ½ × 12 × 11 = 66."
+  },
+  {
+    "id": "expanded-90",
+    "domain": "geometry",
+    "skill": "Pythagorean theorem",
+    "difficulty": "advanced",
+    "prompt": "A right triangle has legs 12 and 16. What is the hypotenuse?",
+    "options": [
+      "18",
+      "20",
+      "19",
+      "21"
+    ],
+    "answer": 1,
+    "hint": "Use the Pythagorean theorem.",
+    "explanation": "c² = 144 + 256 = 400; c = 20."
+  },
+  {
+    "id": "expanded-91",
+    "domain": "geometry",
+    "skill": "Circle area",
+    "difficulty": "advanced",
+    "prompt": "A circle has radius 6. Its area is kπ. What is k?",
+    "options": [
+      "34",
+      "35",
+      "36",
+      "37"
+    ],
+    "answer": 2,
+    "hint": "Use A = πr².",
+    "explanation": "A = π × 6² = 36π, so k = 36."
+  },
+  {
+    "id": "expanded-92",
+    "domain": "geometry",
+    "skill": "Cylinder volume",
+    "difficulty": "advanced",
+    "prompt": "A cylinder has radius 6 and height 11. Its volume is kπ. What is k?",
+    "options": [
+      "394",
+      "395",
+      "397",
+      "396"
+    ],
+    "answer": 3,
+    "hint": "Use V = πr²h.",
+    "explanation": "V = π × 6² × 11 = 396π."
+  },
+  {
+    "id": "expanded-93",
+    "domain": "geometry",
+    "skill": "Sine",
+    "difficulty": "advanced",
+    "prompt": "In a right triangle, sin θ = 3/5. The hypotenuse is 30. What is the side opposite θ?",
+    "options": [
+      "18",
+      "16",
+      "17",
+      "19"
+    ],
+    "answer": 0,
+    "hint": "Sine is opposite divided by hypotenuse.",
+    "explanation": "Opposite = (3/5) × 30 = 18."
+  },
+  {
+    "id": "expanded-94",
+    "domain": "geometry",
+    "skill": "Cosine",
+    "difficulty": "advanced",
+    "prompt": "In a right triangle, cos θ = 4/5. The hypotenuse is 55. What is the side adjacent to θ?",
+    "options": [
+      "42",
+      "44",
+      "43",
+      "45"
+    ],
+    "answer": 1,
+    "hint": "Cosine is adjacent divided by hypotenuse.",
+    "explanation": "Adjacent = (4/5) × 55 = 44."
+  },
+  {
+    "id": "expanded-95",
+    "domain": "geometry",
+    "skill": "Tangent",
+    "difficulty": "advanced",
+    "prompt": "In a right triangle, tan θ = 3/4. The side adjacent to θ is 24. What is the opposite side?",
+    "options": [
+      "16",
+      "17",
+      "18",
+      "19"
+    ],
+    "answer": 2,
+    "hint": "Tangent is opposite divided by adjacent.",
+    "explanation": "Opposite = (3/4) × 24 = 18."
+  },
+  {
+    "id": "expanded-96",
+    "domain": "geometry",
+    "skill": "Similar triangles",
+    "difficulty": "advanced",
+    "prompt": "Two similar triangles have corresponding sides 6 and 18. A second side in the smaller triangle is 11. What is the corresponding side in the larger triangle?",
+    "options": [
+      "31",
+      "32",
+      "34",
+      "33"
+    ],
+    "answer": 3,
+    "hint": "Find the ratio of corresponding sides.",
+    "explanation": "The scale factor is 18/6 = 3. The requested side is 3 × 11 = 33."
+  },
+  {
+    "id": "expanded-97",
+    "domain": "algebra",
+    "skill": "Linear equations",
+    "difficulty": "advanced",
+    "prompt": "Solve 7x + 12 = 75. What is x?",
+    "options": [
+      "9",
+      "7",
+      "8",
+      "10"
+    ],
+    "answer": 0,
+    "hint": "Undo addition before multiplication.",
+    "explanation": "Subtract 12: 7x = 63. Divide by 7: x = 9."
+  },
+  {
+    "id": "expanded-98",
+    "domain": "algebra",
+    "skill": "Distributive property",
+    "difficulty": "advanced",
+    "prompt": "If 7(x − 5) = 28, what is x?",
+    "options": [
+      "7",
+      "9",
+      "8",
+      "10"
+    ],
+    "answer": 1,
+    "hint": "Divide both sides before isolating x.",
+    "explanation": "x − 5 = 4; adding 5 gives 9."
+  },
+  {
+    "id": "expanded-99",
+    "domain": "algebra",
+    "skill": "Systems of equations",
+    "difficulty": "advanced",
+    "prompt": "If x + y = 21 and x − y = -3, what is x?",
+    "options": [
+      "7",
+      "8",
+      "9",
+      "10"
+    ],
+    "answer": 2,
+    "hint": "Add the two equations.",
+    "explanation": "Adding eliminates y: 2x = 18, so x = 9."
+  },
+  {
+    "id": "expanded-100",
+    "domain": "algebra",
+    "skill": "Slope",
+    "difficulty": "advanced",
+    "prompt": "A line passes through (1, 19) and (4, 40). What is its slope?",
+    "options": [
+      "5",
+      "6",
+      "8",
+      "7"
+    ],
+    "answer": 3,
+    "hint": "Divide the change in y by the change in x.",
+    "explanation": "Slope = (40 − 19)/(4 − 1) = 21/3 = 7."
+  },
+  {
+    "id": "expanded-101",
+    "domain": "algebra",
+    "skill": "Intercepts",
+    "difficulty": "advanced",
+    "prompt": "The line y = 7x + b passes through (2, 26). What is b?",
+    "options": [
+      "12",
+      "10",
+      "11",
+      "13"
+    ],
+    "answer": 0,
+    "hint": "Substitute the point into the equation.",
+    "explanation": "26 = 14 + b, giving b = 12."
+  },
+  {
+    "id": "expanded-102",
+    "domain": "algebra",
+    "skill": "Budget inequalities",
+    "difficulty": "advanced",
+    "prompt": "A club has $75 for supplies. After a $12 delivery charge, each kit costs $7. What is the greatest number of kits it can buy?",
+    "options": [
+      "7",
+      "9",
+      "8",
+      "10"
+    ],
+    "answer": 1,
+    "hint": "Subtract the fixed charge first.",
+    "explanation": "The kit budget is $63; 63/7 = 9 kits."
+  },
+  {
+    "id": "expanded-103",
+    "domain": "algebra",
+    "skill": "Parallel lines",
+    "difficulty": "advanced",
+    "prompt": "A line parallel to y = 7x + 12 passes through (0, 2). What is its slope?",
+    "options": [
+      "5",
+      "6",
+      "7",
+      "8"
+    ],
+    "answer": 2,
+    "hint": "Parallel nonvertical lines share a slope.",
+    "explanation": "The coefficient of x in the given line is 7, which is also the parallel line's slope."
+  },
+  {
+    "id": "expanded-104",
+    "domain": "algebra",
+    "skill": "Linear function values",
+    "difficulty": "advanced",
+    "prompt": "If f(t) = 7t − 12, what is f(9)?",
+    "options": [
+      "49",
+      "50",
+      "52",
+      "51"
+    ],
+    "answer": 3,
+    "hint": "Substitute for t, then multiply and subtract.",
+    "explanation": "f(9) = 7(9) − 12 = 51."
+  },
+  {
+    "id": "expanded-105",
+    "domain": "advanced",
+    "skill": "Quadratic roots",
+    "difficulty": "advanced",
+    "prompt": "What is the larger solution of (x − 5)(x − 9) = 0?",
+    "options": [
+      "9",
+      "7",
+      "8",
+      "10"
+    ],
+    "answer": 0,
+    "hint": "Set each factor equal to zero.",
+    "explanation": "The solutions are 5 and 9. The larger is 9."
+  },
+  {
+    "id": "expanded-106",
+    "domain": "advanced",
+    "skill": "Vertex form",
+    "difficulty": "advanced",
+    "prompt": "For f(x) = (x − 7)² + 12, at what x-value does f reach its minimum?",
+    "options": [
+      "5",
+      "7",
+      "6",
+      "8"
+    ],
+    "answer": 1,
+    "hint": "A square is smallest when its value is zero.",
+    "explanation": "The square is zero at x = 7, so that is the minimizing x-value."
+  },
+  {
+    "id": "expanded-107",
+    "domain": "advanced",
+    "skill": "Quadratic maximum",
+    "difficulty": "advanced",
+    "prompt": "What is the maximum value of g(x) = −7(x − 2)² + 12?",
+    "options": [
+      "10",
+      "11",
+      "12",
+      "13"
+    ],
+    "answer": 2,
+    "hint": "The squared term cannot be negative.",
+    "explanation": "The term −7(x − 2)² is at most zero. At x = 2, g(x) = 12, the maximum."
+  },
+  {
+    "id": "expanded-108",
+    "domain": "advanced",
+    "skill": "Difference of squares",
+    "difficulty": "advanced",
+    "prompt": "For x ≠ 7, (x² − 49)/(x − 7) = x + k. What is k?",
+    "options": [
+      "5",
+      "6",
+      "8",
+      "7"
+    ],
+    "answer": 3,
+    "hint": "Factor the numerator.",
+    "explanation": "The numerator is (x − 7)(x + 7); canceling leaves x + 7, so k = 7."
+  },
+  {
+    "id": "expanded-109",
+    "domain": "advanced",
+    "skill": "Exponential growth",
+    "difficulty": "advanced",
+    "prompt": "A culture begins with 70 cells and doubles every hour. How many cells are present after 3 hours?",
+    "options": [
+      "560",
+      "558",
+      "559",
+      "561"
+    ],
+    "answer": 0,
+    "hint": "Three doubling periods give a factor of 2³.",
+    "explanation": "70 × 2³ = 70 × 8 = 560."
+  },
+  {
+    "id": "expanded-110",
+    "domain": "advanced",
+    "skill": "Radical equations",
+    "difficulty": "advanced",
+    "prompt": "If √(x + 12) = 10, what is x?",
+    "options": [
+      "86",
+      "88",
+      "87",
+      "89"
+    ],
+    "answer": 1,
+    "hint": "Square both sides and then subtract.",
+    "explanation": "x + 12 = 100, so x = 88. This gives a nonnegative radicand and satisfies the original equation."
+  },
+  {
+    "id": "expanded-111",
+    "domain": "advanced",
+    "skill": "Quadratic coefficients",
+    "difficulty": "advanced",
+    "prompt": "The expression (x + 7)(x + 12) equals x² + kx + 84. What is k?",
+    "options": [
+      "17",
+      "18",
+      "19",
+      "20"
+    ],
+    "answer": 2,
+    "hint": "The two middle terms combine.",
+    "explanation": "Expanding gives x² + 7x + 12x + 84, so k = 19."
+  },
+  {
+    "id": "expanded-112",
+    "domain": "advanced",
+    "skill": "Exponent rules",
+    "difficulty": "advanced",
+    "prompt": "For z > 0, z^11/z^7 = z^k. What is k?",
+    "options": [
+      "2",
+      "3",
+      "5",
+      "4"
+    ],
+    "answer": 3,
+    "hint": "Subtract exponents when dividing powers with the same base.",
+    "explanation": "k = 11 − 7 = 4."
+  },
+  {
+    "id": "expanded-113",
+    "domain": "geometry",
+    "skill": "Triangle area",
+    "difficulty": "advanced",
+    "prompt": "A triangle has base 14 cm and perpendicular height 12 cm. What is its area in square centimeters?",
+    "options": [
+      "84",
+      "82",
+      "83",
+      "85"
+    ],
+    "answer": 0,
+    "hint": "Use half the base times the height.",
+    "explanation": "Area = ½ × 14 × 12 = 84."
+  },
+  {
+    "id": "expanded-114",
+    "domain": "geometry",
+    "skill": "Pythagorean theorem",
+    "difficulty": "advanced",
+    "prompt": "A right triangle has legs 15 and 20. What is the hypotenuse?",
+    "options": [
+      "23",
+      "25",
+      "24",
+      "26"
+    ],
+    "answer": 1,
+    "hint": "Use the Pythagorean theorem.",
+    "explanation": "c² = 225 + 400 = 625; c = 25."
+  },
+  {
+    "id": "expanded-115",
+    "domain": "geometry",
+    "skill": "Circle area",
+    "difficulty": "advanced",
+    "prompt": "A circle has radius 7. Its area is kπ. What is k?",
+    "options": [
+      "47",
+      "48",
+      "49",
+      "50"
+    ],
+    "answer": 2,
+    "hint": "Use A = πr².",
+    "explanation": "A = π × 7² = 49π, so k = 49."
+  },
+  {
+    "id": "expanded-116",
+    "domain": "geometry",
+    "skill": "Cylinder volume",
+    "difficulty": "advanced",
+    "prompt": "A cylinder has radius 7 and height 12. Its volume is kπ. What is k?",
+    "options": [
+      "586",
+      "587",
+      "589",
+      "588"
+    ],
+    "answer": 3,
+    "hint": "Use V = πr²h.",
+    "explanation": "V = π × 7² × 12 = 588π."
+  },
+  {
+    "id": "expanded-117",
+    "domain": "geometry",
+    "skill": "Sine",
+    "difficulty": "advanced",
+    "prompt": "In a right triangle, sin θ = 3/5. The hypotenuse is 35. What is the side opposite θ?",
+    "options": [
+      "21",
+      "19",
+      "20",
+      "22"
+    ],
+    "answer": 0,
+    "hint": "Sine is opposite divided by hypotenuse.",
+    "explanation": "Opposite = (3/5) × 35 = 21."
+  },
+  {
+    "id": "expanded-118",
+    "domain": "geometry",
+    "skill": "Cosine",
+    "difficulty": "advanced",
+    "prompt": "In a right triangle, cos θ = 4/5. The hypotenuse is 60. What is the side adjacent to θ?",
+    "options": [
+      "46",
+      "48",
+      "47",
+      "49"
+    ],
+    "answer": 1,
+    "hint": "Cosine is adjacent divided by hypotenuse.",
+    "explanation": "Adjacent = (4/5) × 60 = 48."
+  },
+  {
+    "id": "expanded-119",
+    "domain": "geometry",
+    "skill": "Tangent",
+    "difficulty": "advanced",
+    "prompt": "In a right triangle, tan θ = 3/4. The side adjacent to θ is 28. What is the opposite side?",
+    "options": [
+      "19",
+      "20",
+      "21",
+      "22"
+    ],
+    "answer": 2,
+    "hint": "Tangent is opposite divided by adjacent.",
+    "explanation": "Opposite = (3/4) × 28 = 21."
+  },
+  {
+    "id": "expanded-120",
+    "domain": "geometry",
+    "skill": "Similar triangles",
+    "difficulty": "advanced",
+    "prompt": "Two similar triangles have corresponding sides 7 and 21. A second side in the smaller triangle is 12. What is the corresponding side in the larger triangle?",
+    "options": [
+      "34",
+      "35",
+      "37",
+      "36"
+    ],
+    "answer": 3,
+    "hint": "Find the ratio of corresponding sides.",
+    "explanation": "The scale factor is 21/7 = 3. The requested side is 3 × 12 = 36."
+  }
+]);
 
 const DIAGNOSTIC_IDS = QUESTION_BANK.filter(question => question.diagnostic).map(question => question.id);
 const questionById = id => QUESTION_BANK.find(question => question.id === id);
@@ -646,7 +2569,7 @@ function openDiagnostic() {
 function renderDiagnostic() {
   const container = document.querySelector('#diagnostic-content');
   if (diagnosticIndex === -1) {
-    container.innerHTML = `<div class="diagnostic-intro"><span class="empty-icon" aria-hidden="true">8</span><span class="eyebrow">Quick calibration</span><h1 id="diagnostic-title">Find the skills behind the score.</h1><p>Answer 8 original SAT-style questions—two from each math domain. Take your best shot and use scratch paper. There is no penalty for guessing.</p><button class="primary-button" type="button" id="begin-diagnostic">Begin diagnostic</button></div>`;
+    container.innerHTML = `<div class="diagnostic-intro"><span class="empty-icon" aria-hidden="true">${DIAGNOSTIC_IDS.length}</span><span class="eyebrow">Quick calibration</span><h1 id="diagnostic-title">Find the skills behind the score.</h1><p>Answer ${DIAGNOSTIC_IDS.length} original SAT-style questions across all four math domains. Take your best shot and use scratch paper. There is no penalty for guessing.</p><button class="primary-button" type="button" id="begin-diagnostic">Begin diagnostic</button></div>`;
     return;
   }
   if (diagnosticIndex >= DIAGNOSTIC_IDS.length) {
@@ -670,7 +2593,9 @@ function selectDiagnosticAnswer(index) {
 }
 
 function advanceDiagnostic() {
-  const selected = Number(document.querySelector('#diagnostic-next').dataset.answer);
+  const nextButton = document.querySelector('#diagnostic-next');
+  if (!nextButton || nextButton.disabled || nextButton.dataset.answer === undefined) return;
+  const selected = Number(nextButton.dataset.answer);
   const question = questionById(DIAGNOSTIC_IDS[diagnosticIndex]);
   diagnosticAnswers.push({ questionId: question.id, domain: question.domain, correct: selected === question.answer, selected });
   diagnosticIndex += 1;
@@ -689,7 +2614,7 @@ function finishDiagnostic() {
     };
     return rate(a) - rate(b);
   })[0];
-  document.querySelector('#diagnostic-content').innerHTML = `<div class="diagnostic-results"><span class="eyebrow">Plan calibrated</span><h1 id="diagnostic-title">Your starting path is ready.</h1><div class="diagnostic-score"><strong>${correct}/8</strong><small>diagnostic</small></div><p>Start with <strong>${DOMAINS[weakest].name}</strong>, then build breadth across all four domains.</p><div class="result-domains">${Object.entries(DOMAINS).map(([id, domain]) => {
+  document.querySelector('#diagnostic-content').innerHTML = `<div class="diagnostic-results"><span class="eyebrow">Plan calibrated</span><h1 id="diagnostic-title">Your starting path is ready.</h1><div class="diagnostic-score"><strong>${correct}/${DIAGNOSTIC_IDS.length}</strong><small>diagnostic</small></div><p>Start with <strong>${DOMAINS[weakest].name}</strong>, then build breadth across all four domains.</p><div class="result-domains">${Object.entries(DOMAINS).map(([id, domain]) => {
     const items = diagnosticAnswers.filter(answer => answer.domain === id);
     const count = items.filter(answer => answer.correct).length;
     return `<div class="result-domain"><strong>${domain.name}</strong><small>${count} of ${items.length} correct</small></div>`;
