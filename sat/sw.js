@@ -1,4 +1,4 @@
-const CACHE = 'orbit-sat-v3-166';
+const CACHE = 'orbit-sat-v4-learning';
 const ASSETS = ['./', './index.html', './styles.css', './app.js', './manifest.webmanifest', './icon.svg'];
 
 self.addEventListener('install', event => {
