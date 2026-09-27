@@ -1,4 +1,4 @@
-const CACHE = 'orbit-sat-v1';
+const CACHE = 'orbit-sat-v2';
 const ASSETS = ['./', './index.html', './styles.css', './app.js', './manifest.webmanifest', './icon.svg'];
 
 self.addEventListener('install', event => {
