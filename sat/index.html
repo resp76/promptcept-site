@@ -66,15 +66,15 @@
               <span class="time-pill">12 min</span>
             </div>
             <h2 id="mission-title">Find your starting point</h2>
-            <p id="mission-copy">Take an 8-question diagnostic so Orbit can build a study path around your strengths and gaps.</p>
+            <p id="mission-copy">Take an 10-question diagnostic so Orbit can build a study path around your strengths and gaps.</p>
             <button class="white-button" type="button" id="mission-button">Start diagnostic <span aria-hidden="true">→</span></button>
             <div class="mission-art" aria-hidden="true"><span>ƒ</span><i>x</i><b>+</b></div>
           </article>
 
           <article class="score-card">
-            <div class="card-heading"><div><span class="eyebrow">Estimated level</span><h2>Your trajectory</h2></div><span class="trend-badge" id="trend-badge">Baseline</span></div>
+            <div class="card-heading"><div><span class="eyebrow">Reported score</span><h2>Your trajectory</h2></div><span class="trend-badge" id="trend-badge">Baseline</span></div>
             <div class="score-visual">
-              <div class="score-ring" id="score-ring"><span id="estimated-score">540</span><small>estimated</small></div>
+              <div class="score-ring" id="score-ring"><span id="estimated-score">540</span><small>reported</small></div>
               <div class="score-copy"><strong id="points-to-go">140 points to go</strong><p id="score-message">Complete the diagnostic to calibrate your plan.</p></div>
             </div>
             <div class="score-track" aria-hidden="true"><i id="score-track-fill"></i></div>
@@ -109,6 +109,8 @@
               <label class="radio-card"><input type="radio" name="practice-mode" value="mistakes"><span><strong>Retry mistakes</strong><small>Questions you missed</small></span></label>
             </fieldset>
             <label for="domain-select">Focus domain</label>
+            <label for="difficulty-select">Difficulty</label>
+            <select id="difficulty-select"><option value="all">All levels</option><option value="foundation">Build foundations</option><option value="medium">Build confidence</option><option value="advanced">Challenge yourself</option></select>
             <select id="domain-select"><option value="all">All domains</option><option value="algebra">Algebra</option><option value="advanced">Advanced Math</option><option value="data">Problem-Solving & Data</option><option value="geometry">Geometry & Trigonometry</option></select>
             <label class="timer-toggle"><input type="checkbox" id="timer-toggle"><span><strong>Test-day timer</strong><small>About 95 seconds per question</small></span></label>
             <button class="primary-button full" type="button" id="new-question">Start practice</button>
