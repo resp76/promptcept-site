@@ -2,6 +2,21 @@
 
 Newest first. Add an entry for every change to the `sat/` folder.
 
+## 2026-09-27 — Free study resources and Desmos strategy
+
+Sourced from the Mathematics, Statistics, SAT, and STEM-tools sections of [StudentSuite/awesome-study-resources](https://github.com/StudentSuite/awesome-study-resources) (MIT). That repo is a link list, so what was added here is links, not copied content. Only resources tagged free and from well-known publishers were used. Community or unknown sites were left out.
+
+- **Formula guide & study tips** (under every question) now includes:
+  - A Desmos strategy tip, since a Desmos graphing calculator is built into every Math question on the digital SAT.
+  - Free resources for the question's category, plus Khan Academy's official Digital SAT course and the Desmos calculator.
+- **Progress page:** new "Study resources" panel listing the free resources for all four categories.
+- Resources by category:
+  - Algebra and Advanced Math: Paul's Online Math Notes (Lamar University)
+  - Problem-Solving & Data: Khan Academy Statistics & Probability, Seeing Theory (Brown University), OpenIntro Statistics
+  - Geometry & Trigonometry: GeoGebra Geometry, Mathigon
+  - Every category: Khan Academy Official Digital SAT, Desmos Graphing Calculator
+- Links are listed in `RESOURCES` in `app.js`. Edit that list to add or remove one.
+
 ## 2026-09-27 — 400 new questions and multiple learners
 
 **Question bank: 166 → 566 questions (+100 per category)**

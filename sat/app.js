@@ -2373,7 +2373,7 @@ function routeTo(route) {
   document.querySelector('#profile-button').setAttribute('aria-expanded', 'false');
   if (next === 'home') renderHome();
   if (next === 'review') renderReview();
-  if (next === 'progress') renderProgress();
+  if (next === 'progress') { renderProgress(); renderResources(); }
   window.scrollTo({ top: 0, behavior: 'smooth' });
   document.querySelector('#main-content').focus({ preventScroll: true });
 }
@@ -2498,7 +2498,7 @@ function renderQuestion() {
       ${currentQuestion.options.map((option, index) => `<button class="option" type="button" role="radio" aria-checked="false" data-answer="${index}"><span class="option-letter">${letters[index]}</span><span>${escapeHtml(option)}</span></button>`).join('')}
     </div>
     <div id="question-support" aria-live="polite"></div>
-    <details class="hint-box"><summary>Formula guide & study tips</summary><p>${studyGuide(currentQuestion.domain)}</p><p>Write down what the question asks. Choose a method, work it out on paper, then check your answer in the original problem.</p></details>
+    <details class="hint-box"><summary>Formula guide & study tips</summary><p>${studyGuide(currentQuestion.domain)}</p><p>Write down what the question asks. Choose a method, work it out on paper, then check your answer in the original problem.</p><p><b>Desmos strategy:</b> ${DESMOS_TIP}</p><p><b>Free resources for this topic</b></p><ul class="resource-links">${resourceLinks(currentQuestion.domain)}</ul></details>
     <div class="question-actions"><button class="hint-button" type="button" id="show-hint">Give me a hint</button><button class="primary-button" type="button" id="check-answer" disabled>Check answer</button></div>`;
 }
 
@@ -2553,6 +2553,44 @@ function submitAnswer() {
   actions.innerHTML = `<button class="secondary-button" type="button" id="similar-question">Try a similar question</button><button class="primary-button" type="button" id="next-question">Next question →</button>`;
   const today = state.attempts.filter(a => a.date.slice(0, 10) === todayKey()).length;
   document.querySelector('#question-support').insertAdjacentHTML('beforeend', `<p class="hint-box">${today} questions practiced today · ${today >= 10 ? 'Daily goal reached. Take a break or keep learning.' : `${10 - today} more to your daily goal of 10.`}</p>`);
+}
+
+// Free resources picked from StudentSuite/awesome-study-resources (Mathematics, Statistics, STEM tools).
+const RESOURCES = {
+  all: [
+    { name: 'Khan Academy Official Digital SAT', url: 'https://www.khanacademy.org/digital-sat', use: 'Free official lessons and practice, made with College Board.' },
+    { name: 'Desmos Graphing Calculator', url: 'https://www.desmos.com/calculator', use: 'The same calculator built into the digital SAT. Practice with it here.' }
+  ],
+  algebra: [
+    { name: 'Paul’s Online Math Notes: Algebra', url: 'https://tutorial.math.lamar.edu/Classes/Alg/Alg.aspx', use: 'Worked examples for equations, inequalities, lines, and systems.' }
+  ],
+  advanced: [
+    { name: 'Paul’s Online Math Notes: Algebra', url: 'https://tutorial.math.lamar.edu/Classes/Alg/Alg.aspx', use: 'Quadratics, exponents, radicals, rational equations, and functions.' }
+  ],
+  data: [
+    { name: 'Khan Academy Statistics & Probability', url: 'https://www.khanacademy.org/math/statistics-probability', use: 'Lessons on mean, median, spread, and probability.' },
+    { name: 'Seeing Theory (Brown University)', url: 'https://seeing-theory.brown.edu/', use: 'Interactive visuals of probability and distributions.' },
+    { name: 'OpenIntro Statistics', url: 'https://www.openintro.org/book/os/', use: 'Free open-source statistics textbook.' }
+  ],
+  geometry: [
+    { name: 'GeoGebra Geometry', url: 'https://www.geogebra.org/geometry', use: 'Draw triangles, circles, and angles to see why formulas work.' },
+    { name: 'Mathigon', url: 'https://mathigon.org/courses', use: 'Interactive lessons on triangles, circles, and trigonometry.' }
+  ]
+};
+
+const DESMOS_TIP = 'On the digital SAT, a Desmos graphing calculator is built into every Math question. To check an equation, graph each side as its own line and read where they cross. To find a quadratic’s vertex or zeros, graph it and tap the points.';
+
+const resourceItem = item => `<li><a href="${item.url}" target="_blank" rel="noopener noreferrer">${escapeHtml(item.name)} <span aria-hidden="true">↗</span></a><small>${escapeHtml(item.use)}</small></li>`;
+
+function resourceLinks(domain) {
+  return [...RESOURCES[domain], ...RESOURCES.all].map(resourceItem).join('');
+}
+
+function renderResources() {
+  const groups = [...Object.entries(DOMAINS).map(([key, domain]) => [domain.name, RESOURCES[key]]), ['Every domain', RESOURCES.all]];
+  document.querySelector('#resource-list').innerHTML = groups.map(([title, items]) =>
+    `<div class="resource-group"><h3>${title}</h3><ul class="resource-links">${items.map(resourceItem).join('')}</ul></div>`
+  ).join('');
 }
 
 function studyGuide(domain) {
