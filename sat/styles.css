@@ -21,6 +21,8 @@
 }
 
 * { box-sizing: border-box; }
+textarea { width: 100%; margin: 8px 0; padding: 12px; font: inherit; border: 1px solid var(--line); border-radius: 10px; resize: vertical; }
+summary { cursor: pointer; font-weight: 750; padding: 5px 0; }
 html { scroll-behavior: smooth; }
 body {
   margin: 0;
