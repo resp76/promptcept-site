@@ -234,7 +234,7 @@ const QUESTION_BANK = [
     hint: 'Use A = πr².', explanation: 'A = π(6²) = 36π.'
   },
   {
-    id: 'geo-07', domain: 'geometry', skill: 'Right triangles', difficulty: 'foundation',
+    id: 'geo-16', domain: 'geometry', skill: 'Right triangles', difficulty: 'foundation',
     prompt: 'A right triangle has legs 5 and 12. What is the hypotenuse?', options: ['11', '13', '15', '17'], answer: 1,
     hint: 'Recognize the 5-12-13 Pythagorean triple.', explanation: '5² + 12² = 169, so the hypotenuse is 13.'
   },
