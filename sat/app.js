@@ -2222,7 +2222,9 @@ function createDefaultState() {
     attempts: [],
     studyDays: {},
     sessionMinutes: 0,
-    lastQuestionId: null
+    lastQuestionId: null,
+    tests: [],
+    activeTest: null
   };
 }
 
@@ -2270,7 +2272,8 @@ function loadState() {
       ...saved,
       diagnostic: { ...createDefaultState().diagnostic, ...(saved.diagnostic || {}) },
       attempts: Array.isArray(saved.attempts) ? saved.attempts : [],
-      studyDays: saved.studyDays && typeof saved.studyDays === 'object' ? saved.studyDays : {}
+      studyDays: saved.studyDays && typeof saved.studyDays === 'object' ? saved.studyDays : {},
+      tests: Array.isArray(saved.tests) ? saved.tests : []
     };
   } catch (error) {
     console.warn('Orbit recovered from invalid saved progress.', error);
@@ -2360,7 +2363,7 @@ function showToast(message) {
 }
 
 function routeTo(route) {
-  const valid = ['home', 'practice', 'review', 'progress'];
+  const valid = ['home', 'practice', 'review', 'progress', 'test'];
   const next = valid.includes(route) ? route : 'home';
   document.querySelectorAll('.view').forEach(view => view.classList.toggle('active', view.id === `view-${next}`));
   document.querySelectorAll('[data-route]').forEach(button => {
@@ -2374,6 +2377,7 @@ function routeTo(route) {
   if (next === 'home') renderHome();
   if (next === 'review') renderReview();
   if (next === 'progress') { renderProgress(); renderResources(); }
+  if (next === 'test') renderTest();
   window.scrollTo({ top: 0, behavior: 'smooth' });
   document.querySelector('#main-content').focus({ preventScroll: true });
 }
@@ -2494,6 +2498,7 @@ function renderQuestion() {
   document.querySelector('#question-card').innerHTML = `
     <div class="question-meta"><span>${domain.name} · ${escapeHtml(currentQuestion.skill)}</span><span class="difficulty">${currentQuestion.difficulty}</span><span class="question-timer" id="question-timer">0:00</span></div>
     <h2 class="question-prompt">${escapeHtml(currentQuestion.prompt)}</h2>
+    ${currentQuestion.figure ? figureSvg(currentQuestion.figure) : ''}
     <div class="options" role="radiogroup" aria-label="Answer choices">
       ${currentQuestion.options.map((option, index) => `<button class="option" type="button" role="radio" aria-checked="false" data-answer="${index}"><span class="option-letter">${letters[index]}</span><span>${escapeHtml(option)}</span></button>`).join('')}
     </div>
@@ -2548,7 +2553,7 @@ function submitAnswer() {
     if (index === currentQuestion.answer) option.classList.add('correct');
     if (index === selectedAnswer && !correct) option.classList.add('incorrect');
   });
-  document.querySelector('#question-support').innerHTML = `<div class="feedback-box ${correct ? 'correct' : 'incorrect'}"><strong>${correct ? 'Correct — check your reasoning below.' : 'Let’s work through it.'}</strong><p>Answer: ${escapeHtml(currentQuestion.options[currentQuestion.answer])}</p><p>${escapeHtml(currentQuestion.explanation)}</p><p><b>Remember:</b> ${escapeHtml(currentQuestion.hint)}</p><label for="reflection">What will you remember next time?</label><textarea id="reflection" rows="2" maxlength="300" placeholder="Example: subtract the fixed fee before dividing."></textarea><button class="secondary-button" type="button" id="save-reflection">Save my note</button></div>`;
+  document.querySelector('#question-support').innerHTML = `<div class="feedback-box ${correct ? 'correct' : 'incorrect'}"><strong>${correct ? 'Correct — check your reasoning below.' : 'Let’s work through it.'}</strong><p>Answer: ${escapeHtml(currentQuestion.options[currentQuestion.answer])}</p>${!correct && currentQuestion.mistakes?.[selectedAnswer] ? `<p class="mistake-note"><b>About your answer, ${escapeHtml(currentQuestion.options[selectedAnswer])}:</b> ${escapeHtml(currentQuestion.mistakes[selectedAnswer])}</p>` : ''}<p>${escapeHtml(currentQuestion.explanation)}</p>${currentQuestion.rule ? `<p><b>Rule:</b> ${escapeHtml(currentQuestion.rule)}</p>` : ''}<p><b>Remember:</b> ${escapeHtml(currentQuestion.hint)}</p><label for="reflection">What will you remember next time?</label><textarea id="reflection" rows="2" maxlength="300" placeholder="Example: subtract the fixed fee before dividing."></textarea><button class="secondary-button" type="button" id="save-reflection">Save my note</button></div>`;
   const actions = document.querySelector('.question-actions');
   actions.innerHTML = `<button class="secondary-button" type="button" id="similar-question">Try a similar question</button><button class="primary-button" type="button" id="next-question">Next question →</button>`;
   const today = state.attempts.filter(a => a.date.slice(0, 10) === todayKey()).length;
@@ -2636,7 +2641,7 @@ function renderReview() {
   container.innerHTML = mistakes.map(attempt => {
     const question = questionById(attempt.questionId);
     if (!question) return '';
-    return `<article class="mistake-item"><div><span class="mistake-domain">${DOMAINS[question.domain].name} · ${escapeHtml(question.skill)}</span><h3>${escapeHtml(question.prompt)}</h3><p>${escapeHtml(question.explanation)}</p>${attempt.note ? `<p><b>My takeaway:</b> ${escapeHtml(attempt.note)}</p>` : ''} </div><button class="secondary-button" type="button" data-retry="${question.id}">Retry question</button></article>`;
+    return `<article class="mistake-item"><div><span class="mistake-domain">${DOMAINS[question.domain].name} · ${escapeHtml(question.skill)}</span><h3>${escapeHtml(question.prompt)}</h3>${attempt.selected != null && question.mistakes?.[attempt.selected] ? `<p class="mistake-note"><b>You chose ${escapeHtml(question.options[attempt.selected])}:</b> ${escapeHtml(question.mistakes[attempt.selected])}</p>` : ''}<p>${escapeHtml(question.explanation)}</p>${question.rule ? `<p><b>Rule:</b> ${escapeHtml(question.rule)}</p>` : ''}${attempt.note ? `<p><b>My takeaway:</b> ${escapeHtml(attempt.note)}</p>` : ''} </div><button class="secondary-button" type="button" data-retry="${question.id}">Retry question</button></article>`;
   }).join('');
 }
 
@@ -2655,6 +2660,7 @@ function renderProgress() {
   }).join('');
   const history = [
     ...state.diagnostic.answers.length ? [{ date: state.diagnostic.completedAt, name: 'SAT Math diagnostic', result: `${state.diagnostic.answers.filter(item => item.correct).length}/${state.diagnostic.answers.length}`, good: true }] : [],
+    ...state.tests.slice(-3).reverse().map(record => { const { correct, total } = testScore(record); return { date: record.date, name: 'Timed practice module', result: `${correct}/${total}`, good: correct / total >= 0.7 }; }),
     ...state.attempts.slice(-12).reverse().map(attempt => ({ date: attempt.date, name: questionById(attempt.questionId)?.skill || 'Practice question', result: attempt.correct ? 'Correct' : 'Review', good: attempt.correct }))
   ];
   document.querySelector('#history-list').innerHTML = history.length ? history.map(item => `<div class="history-row"><time>${new Date(item.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</time><strong>${escapeHtml(item.name)}</strong><span class="history-result ${item.good ? 'good' : ''}">${item.result}</span></div>`).join('') : '<div class="empty-state">Complete the diagnostic or a practice question to start your history.</div>';
@@ -2774,6 +2780,13 @@ async function saveSettings() {
   showToast('Study plan updated.');
 }
 
+function chooseTestAnswer(index) {
+  state.activeTest.answers[state.activeTest.index] = index;
+  saveState();
+  renderTest();
+  document.querySelector(`[data-test-answer="${index}"]`)?.focus();
+}
+
 function handleClick(event) {
   if (event.target.closest('#similar-question')) return similarQuestion();
   if (event.target.closest('#save-reflection')) {
@@ -2860,6 +2873,232 @@ function handleClick(event) {
   const retry = event.target.closest('[data-retry]');
   if (retry) { routeTo('practice'); chooseQuestion(retry.dataset.retry); return; }
   if (event.target.closest('#print-progress')) return window.print();
+  if (event.target.closest('#start-test')) return startTest();
+  if (event.target.closest('#test-intro')) return renderTestIntro();
+  const pastTest = event.target.closest('[data-test-result]');
+  if (pastTest) return renderTestResults(state.tests[Number(pastTest.dataset.testResult)]);
+  if (!state.activeTest) return;
+  const testAnswer = event.target.closest('[data-test-answer]');
+  if (testAnswer) return chooseTestAnswer(Number(testAnswer.dataset.testAnswer));
+  const jump = event.target.closest('[data-test-goto]');
+  if (jump) { state.activeTest.index = Number(jump.dataset.testGoto); saveState(); return renderTest(); }
+  if (event.target.closest('#test-prev')) { state.activeTest.index -= 1; saveState(); return renderTest(); }
+  if (event.target.closest('#test-next')) { state.activeTest.index += 1; saveState(); return renderTest(); }
+  if (event.target.closest('#test-flag')) { const i = state.activeTest.index; state.activeTest.flagged[i] = !state.activeTest.flagged[i]; saveState(); return renderTest(); }
+  if (event.target.closest('#test-finish') || event.target.closest('#test-finish-early')) return confirmFinishTest();
+}
+
+// ---------- Geometry figures ----------
+
+function svgLabel(x, y, text, anchor = 'middle') {
+  const unknown = String(text).includes('?');
+  return `<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" text-anchor="${anchor}" dominant-baseline="middle" class="fig-text${unknown ? ' fig-unknown' : ''}">${escapeHtml(text)}</text>`;
+}
+
+// Keeps extreme shapes readable; when the drawing is squashed, say so, as the SAT does.
+function fitRatio(ratio) {
+  const clamped = clamp(ratio, 0.3, 1.4);
+  return { ratio: clamped, scaled: Math.abs(clamped - ratio) > 1e-9 };
+}
+
+function figureSvg(fig) {
+  let body = '', note = false, label = '';
+  const pts = list => list.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(' ');
+  if (fig.type === 'right-triangle') {
+    const s = Math.min(220 / fig.b, 140 / fig.a);
+    const C = [40, 170], B = [40 + fig.b * s, 170], A = [40, 170 - fig.a * s];
+    const mid = [(A[0] + B[0]) / 2, (A[1] + B[1]) / 2], len = Math.hypot(mid[0] - C[0], mid[1] - C[1]);
+    body = `<polygon class="fig-shape" points="${pts([A, B, C])}"/><polyline class="fig-line" points="${pts([[C[0], C[1] - 12], [C[0] + 12, C[1] - 12], [C[0] + 12, C[1]]])}"/>`
+      + svgLabel(C[0] - 8, (A[1] + C[1]) / 2, fig.aLabel, 'end') + svgLabel((C[0] + B[0]) / 2, C[1] + 16, fig.bLabel)
+      + svgLabel(mid[0] + (mid[0] - C[0]) / len * 16, mid[1] + (mid[1] - C[1]) / len * 16, fig.cLabel);
+    if (fig.theta) {
+      const u = [(C[0] - B[0]) / Math.hypot(C[0] - B[0], C[1] - B[1]), 0], v = [(A[0] - B[0]), (A[1] - B[1])], vl = Math.hypot(...v);
+      const bis = [u[0] + v[0] / vl, u[1] + v[1] / vl], bl = Math.hypot(...bis);
+      body += svgLabel(B[0] + bis[0] / bl * 34, B[1] + bis[1] / bl * 34, 'θ');
+    }
+    label = `Right triangle. Vertical leg ${fig.aLabel}, horizontal leg ${fig.bLabel}, hypotenuse ${fig.cLabel}${fig.theta ? ', angle θ at the bottom right' : ''}.`;
+  } else if (fig.type === 'triangle-height') {
+    const fit = fitRatio(fig.height / fig.base); note = fit.scaled;
+    const w = Math.min(220, 130 / fit.ratio), h = w * fit.ratio;
+    const P = [40, 170], Q = [40 + w, 170], R = [40 + w * 0.35, 170 - h];
+    body = `<polygon class="fig-shape" points="${pts([P, Q, R])}"/><line class="fig-line fig-dash" x1="${R[0]}" y1="${R[1]}" x2="${R[0]}" y2="170"/><polyline class="fig-line" points="${pts([[R[0], 160], [R[0] + 10, 160], [R[0] + 10, 170]])}"/>`
+      + svgLabel((P[0] + Q[0]) / 2, 186, fig.baseLabel) + svgLabel(R[0] + 16, 170 - h / 2, fig.heightLabel, 'start');
+    label = `Triangle with base ${fig.baseLabel} and height ${fig.heightLabel}.`;
+  } else if (fig.type === 'rectangle') {
+    const fit = fitRatio(fig.width / fig.length); note = fit.scaled;
+    const w = Math.min(200, 130 / fit.ratio), h = w * fit.ratio, x = 60, y = 90 - h / 2;
+    body = `<rect class="fig-shape" x="${x}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}"/>`
+      + svgLabel(x - 8, y + h / 2, fig.widthLabel, 'end') + svgLabel(x + w / 2, y + h + 16, fig.lengthLabel) + svgLabel(x + w / 2, y + h / 2, fig.inside);
+    label = `Rectangle with width ${fig.widthLabel}, length ${fig.lengthLabel}, ${fig.inside}.`;
+  } else if (fig.type === 'circle') {
+    body = `<circle class="fig-shape" cx="150" cy="95" r="70"/><circle cx="150" cy="95" r="3" class="fig-dot"/><line class="fig-line" x1="150" y1="95" x2="220" y2="95"/>`
+      + svgLabel(185, 83, fig.radiusLabel) + (fig.caption ? svgLabel(150, 185, fig.caption) : '');
+    label = `Circle with radius ${fig.radiusLabel}${fig.caption ? `, ${fig.caption}` : ''}.`;
+  } else if (fig.type === 'sector') {
+    const r = 70, cx = 150, cy = 95, t = fig.angle * Math.PI / 180, large = fig.angle > 180 ? 1 : 0;
+    const end = [cx + r * Math.cos(t), cy - r * Math.sin(t)], half = [Math.cos(t / 2), -Math.sin(t / 2)];
+    body = `<circle class="fig-faint" cx="${cx}" cy="${cy}" r="${r}"/><line class="fig-line" x1="${cx}" y1="${cy}" x2="${cx + r}" y2="${cy}"/><line class="fig-line" x1="${cx}" y1="${cy}" x2="${end[0].toFixed(1)}" y2="${end[1].toFixed(1)}"/>`
+      + `<path class="fig-arc" d="M ${cx + r} ${cy} A ${r} ${r} 0 ${large} 0 ${end[0].toFixed(1)} ${end[1].toFixed(1)}"/>`
+      + `<path class="fig-line" d="M ${cx + 16} ${cy} A 16 16 0 ${large} 0 ${(cx + 16 * Math.cos(t)).toFixed(1)} ${(cy - 16 * Math.sin(t)).toFixed(1)}"/>`
+      + svgLabel(cx + half[0] * 34, cy + half[1] * 34, `${fig.angle}°`) + svgLabel(cx + half[0] * (r + 16), cy + half[1] * (r + 16), fig.arcLabel)
+      + svgLabel(cx + r / 2, cy + 13, fig.radiusLabel);
+    label = `Circle sector with radius ${fig.radiusLabel} and a ${fig.angle}° central angle; the arc length is unknown.`;
+  } else if (fig.type === 'triangle-angles') {
+    const A = fig.A * Math.PI / 180, B = fig.B * Math.PI / 180, side = Math.sin(B) / Math.sin(Math.PI - A - B);
+    const raw = [[0, 0], [1, 0], [side * Math.cos(A), side * Math.sin(A)]];
+    const minX = Math.min(...raw.map(p => p[0])), maxX = Math.max(...raw.map(p => p[0])), maxY = raw[2][1];
+    const s = Math.min(220 / (maxX - minX), 140 / maxY);
+    const [P, Q, R] = raw.map(([x, y]) => [40 + (x - minX) * s, 170 - y * s]);
+    const inside = (V, U, W, deg) => {
+      const a = [U[0] - V[0], U[1] - V[1]], b = [W[0] - V[0], W[1] - V[1]], la = Math.hypot(...a), lb = Math.hypot(...b);
+      const bis = [a[0] / la + b[0] / lb, a[1] / la + b[1] / lb], bl = Math.hypot(...bis), d = clamp(17 / Math.sin(deg * Math.PI / 360), 32, 70);
+      return [V[0] + bis[0] / bl * d, V[1] + bis[1] / bl * d];
+    };
+    const la = inside(P, Q, R, fig.A), lb = inside(Q, P, R, fig.B), lc = inside(R, P, Q, 180 - fig.A - fig.B);
+    body = `<polygon class="fig-shape" points="${pts([P, Q, R])}"/>` + svgLabel(...la, fig.aLabel) + svgLabel(...lb, fig.bLabel) + svgLabel(...lc, fig.cLabel);
+    label = `Triangle with angles ${fig.aLabel}, ${fig.bLabel}, and ${fig.cLabel}.`;
+  } else return '';
+  return `<figure class="question-figure"><svg viewBox="0 0 300 200" role="img" aria-label="${escapeHtml(label)}">${body}</svg>${note ? '<figcaption>Note: figure not drawn to scale.</figcaption>' : ''}</figure>`;
+}
+
+// ---------- Timed practice module ----------
+
+const TEST_MINUTES = 35;
+// One digital SAT Math module: 22 questions, weighted like the real domain split (≈35/35/15/15%).
+const TEST_BLUEPRINT = { algebra: 8, advanced: 8, data: 3, geometry: 3 };
+const DIFFICULTY_RANK = { foundation: 0, medium: 1, advanced: 2 };
+let testInterval = null;
+
+const shuffled = list => list.map(item => [Math.random(), item]).sort((a, b) => a[0] - b[0]).map(([, item]) => item);
+const formatClock = ms => { const s = Math.max(0, Math.ceil(ms / 1000)); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; };
+const testRemaining = () => state.activeTest.startedAt + TEST_MINUTES * 60000 - Date.now();
+
+function pickTestQuestions() {
+  const seen = new Set(state.attempts.map(attempt => attempt.questionId));
+  const picked = Object.entries(TEST_BLUEPRINT).flatMap(([domain, count]) => {
+    const pool = shuffled(QUESTION_BANK.filter(question => question.domain === domain));
+    return [...pool.filter(q => !seen.has(q.id)), ...pool.filter(q => seen.has(q.id))].slice(0, count);
+  });
+  return shuffled(picked).sort((a, b) => DIFFICULTY_RANK[a.difficulty] - DIFFICULTY_RANK[b.difficulty]).map(question => question.id);
+}
+
+function startTest() {
+  const ids = pickTestQuestions();
+  state.activeTest = { ids, answers: ids.map(() => null), flagged: ids.map(() => false), index: 0, startedAt: Date.now() };
+  saveState();
+  renderTest();
+  resumeTestTimer();
+}
+
+function resumeTestTimer() {
+  clearInterval(testInterval);
+  if (state.activeTest) { testInterval = setInterval(tickTest, 1000); tickTest(); }
+}
+
+function tickTest() {
+  if (!state.activeTest) return clearInterval(testInterval);
+  const remaining = testRemaining();
+  if (remaining <= 0) return finishTest(true);
+  const timer = document.querySelector('#test-timer');
+  if (timer) { timer.textContent = formatClock(remaining); timer.classList.toggle('low', remaining < 5 * 60000); }
+}
+
+function testScore(record) {
+  const questions = record.ids.map(questionById);
+  const correct = questions.filter((q, i) => q && record.answers[i] === q.answer).length;
+  return { questions, correct, total: record.ids.length };
+}
+
+function renderTest() {
+  const container = document.querySelector('#test-content');
+  const test = state.activeTest;
+  if (!test) return renderTestIntro();
+  if (testRemaining() <= 0) return finishTest(true);
+  const i = test.index, q = questionById(test.ids[i]), last = i === test.ids.length - 1;
+  const letters = ['A', 'B', 'C', 'D'];
+  container.innerHTML = `
+    <div class="test-bar">
+      <strong>Question ${i + 1} of ${test.ids.length}</strong>
+      <span class="test-timer" id="test-timer" role="timer" aria-label="Time remaining">${formatClock(testRemaining())}</span>
+      <button class="text-button" type="button" id="test-flag" aria-pressed="${test.flagged[i]}">${test.flagged[i] ? '★ Marked for review' : '☆ Mark for review'}</button>
+    </div>
+    <article class="question-card test-card">
+      <h2 class="question-prompt">${escapeHtml(q.prompt)}</h2>
+      ${q.figure ? figureSvg(q.figure) : ''}
+      <div class="options" role="radiogroup" aria-label="Answer choices">
+        ${q.options.map((option, n) => `<button class="option${test.answers[i] === n ? ' selected' : ''}" type="button" role="radio" aria-checked="${test.answers[i] === n}" data-test-answer="${n}"><span class="option-letter">${letters[n]}</span><span>${escapeHtml(option)}</span></button>`).join('')}
+      </div>
+      <div class="question-actions"><button class="secondary-button" type="button" id="test-prev" ${i === 0 ? 'disabled' : ''}>← Back</button><button class="primary-button" type="button" id="${last ? 'test-finish' : 'test-next'}">${last ? 'Finish and score' : 'Next →'}</button></div>
+    </article>
+    <nav class="test-grid" aria-label="Question navigator">${test.ids.map((_, n) => `<button type="button" class="test-dot${test.answers[n] !== null ? ' answered' : ''}${test.flagged[n] ? ' flagged' : ''}${n === i ? ' current' : ''}" data-test-goto="${n}" aria-label="Question ${n + 1}${test.answers[n] !== null ? ', answered' : ''}${test.flagged[n] ? ', marked for review' : ''}"${n === i ? ' aria-current="step"' : ''}>${n + 1}</button>`).join('')}</nav>
+    <button class="danger-link" type="button" id="test-finish-early">Finish module now</button>`;
+}
+
+function renderTestIntro() {
+  const past = state.tests.map((record, index) => ({ record, index })).slice(-5).reverse();
+  document.querySelector('#test-content').innerHTML = `
+    <div class="page-heading"><div><span class="eyebrow">Practice test mode</span><h1 id="test-title">Timed practice module</h1><p class="page-lede">22 questions in ${TEST_MINUTES} minutes, the same length as one digital SAT Math module.</p></div></div>
+    <div class="test-intro-grid">
+      <section class="progress-panel"><h2>How it works</h2><ul class="test-rules">
+        <li>Questions from all four domains in SAT proportions: 8 Algebra, 8 Advanced Math, 3 Problem-Solving &amp; Data, 3 Geometry &amp; Trigonometry. They get harder as you go.</li>
+        <li>No hints or explanations until you finish. You can skip, go back, and mark questions for review.</li>
+        <li>The timer keeps running if you leave this page. At 0:00 the module is scored automatically.</li>
+        <li>Have scratch paper ready. As on the real test, you can use the <a href="https://www.desmos.com/calculator" target="_blank" rel="noopener noreferrer">Desmos calculator ↗</a>.</li>
+      </ul><button class="primary-button" type="button" id="start-test">Start the ${TEST_MINUTES}-minute module</button></section>
+      <section class="progress-panel"><h2>Past modules</h2>${past.length ? past.map(({ record, index }) => {
+        const { correct, total } = testScore(record);
+        return `<div class="history-row"><time>${new Date(record.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</time><strong>${correct} of ${total} correct · ${formatClock(record.seconds * 1000)}</strong><button class="text-button" type="button" data-test-result="${index}">Review</button></div>`;
+      }).join('') : '<p class="page-lede">No modules yet. Your results will appear here.</p>'}</section>
+    </div>`;
+}
+
+function finishTest(timeUp = false) {
+  const test = state.activeTest;
+  if (!test) return;
+  clearInterval(testInterval);
+  const finishedAt = Math.min(Date.now(), test.startedAt + TEST_MINUTES * 60000);
+  const seconds = Math.round((finishedAt - test.startedAt) / 1000), date = new Date(finishedAt).toISOString();
+  test.ids.forEach((id, i) => {
+    const q = questionById(id);
+    if (q) state.attempts.push({ questionId: id, domain: q.domain, skill: q.skill, correct: test.answers[i] === q.answer, selected: test.answers[i], seconds: Math.round(seconds / test.ids.length), date, source: 'test' });
+  });
+  const record = { date, ids: test.ids, answers: test.answers, seconds, timeUp };
+  state.tests.push(record);
+  state.activeTest = null;
+  recordStudy(Math.round(seconds / 6) / 10);
+  saveState();
+  renderTestResults(record);
+  if (timeUp && !document.querySelector('#view-test').classList.contains('active')) showToast('Time’s up. Your practice module has been scored. Open it from Practice.');
+}
+
+function renderTestResults(record) {
+  const { questions, correct, total } = testScore(record);
+  const letters = ['A', 'B', 'C', 'D'];
+  const byDomain = Object.entries(DOMAINS).map(([id, domain]) => {
+    const items = questions.map((q, i) => [q, i]).filter(([q]) => q?.domain === id);
+    return `<div class="result-domain"><strong>${domain.name}</strong><small>${items.filter(([q, i]) => record.answers[i] === q.answer).length} of ${items.length} correct</small></div>`;
+  }).join('');
+  const review = questions.map((q, i) => {
+    if (!q) return '';
+    const chosen = record.answers[i], ok = chosen === q.answer;
+    const why = !ok && chosen !== null ? q.mistakes?.[chosen] : null;
+    return `<article class="test-review-item ${ok ? 'good' : 'miss'}"><span class="mistake-domain">Question ${i + 1} · ${DOMAINS[q.domain].name} · ${escapeHtml(q.skill)}</span><h3>${escapeHtml(q.prompt)}</h3>
+      <p><b>${ok ? '✓ Correct' : '✗ ' + (chosen === null ? 'No answer' : `You chose ${letters[chosen]}: ${escapeHtml(q.options[chosen])}`)}</b>${ok ? '' : ` · Correct: ${letters[q.answer]}: ${escapeHtml(q.options[q.answer])}`}</p>
+      ${why ? `<p class="mistake-note">${escapeHtml(why)}</p>` : ''}<p>${escapeHtml(q.explanation)}</p>${q.rule ? `<p><b>Rule:</b> ${escapeHtml(q.rule)}</p>` : ''}</article>`;
+  }).join('');
+  document.querySelector('#test-content').innerHTML = `
+    <div class="page-heading"><div><span class="eyebrow">Module scored</span><h1 id="test-title">${correct} of ${total} correct</h1><p class="page-lede">${Math.round(correct / total * 100)}% in ${formatClock(record.seconds * 1000)}${record.timeUp ? ' (time ran out)' : ''}. This is practice accuracy, not an official SAT score. For a scored test, use Bluebook.</p></div></div>
+    <div class="result-domains">${byDomain}</div>
+    <div class="question-actions"><button class="secondary-button" type="button" data-route="review">Open mistake journal</button><button class="primary-button" type="button" id="test-intro">Back to practice modules</button></div>
+    <section class="progress-panel"><div class="section-heading"><div><span class="eyebrow">Question by question</span><h2>Review your module</h2></div></div>${review}</section>`;
+}
+
+function confirmFinishTest() {
+  const test = state.activeTest;
+  const unanswered = test.answers.filter(answer => answer === null).length, flagged = test.flagged.filter(Boolean).length;
+  const warnings = [unanswered && `${unanswered} unanswered`, flagged && `${flagged} marked for review`].filter(Boolean).join(' and ');
+  if (warnings && !confirm(`You have ${warnings}. Finish and score the module anyway?`)) return;
+  finishTest(false);
 }
 
 function signIn(id) {
@@ -2892,6 +3131,7 @@ function enterApp() {
   renderReview();
   renderProgress();
   routeTo(location.hash.slice(1) || 'home');
+  resumeTestTimer();
   showToast(`Welcome back, ${state.profile?.name || 'learner'}.`);
 }
 
@@ -2929,6 +3169,8 @@ function init() {
   window.addEventListener('hashchange', () => routeTo(location.hash.slice(1)));
   document.addEventListener('keydown', event => {
     if (event.target.closest('input, textarea, select') || document.querySelector('dialog[open]')) return;
+    const key = Number(event.key);
+    if (state.activeTest && document.querySelector('#view-test').classList.contains('active') && key >= 1 && key <= 4) return chooseTestAnswer(key - 1);
     if (!currentQuestion || questionAnswered || !document.querySelector('#view-practice').classList.contains('active')) return;
     const number = Number(event.key);
     if (number >= 1 && number <= 4) selectAnswer(number - 1);
@@ -2948,6 +3190,7 @@ function init() {
   renderReview();
   renderProgress();
   routeTo(location.hash.slice(1) || 'home');
+  resumeTestTimer();
   if (!currentUserId && users.length) openLogin();
   else if (!state.profile) document.querySelector('#onboarding-dialog').showModal();
   if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) navigator.serviceWorker.register('./sw.js').catch(() => {});

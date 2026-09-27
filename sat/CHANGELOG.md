@@ -2,6 +2,36 @@
 
 Newest first. Add an entry for every change to the `sat/` folder.
 
+## 2026-09-27 — Mistake feedback, timed practice modules, and geometry diagrams
+
+These ideas came from reviewing three open-source projects. No code or questions were copied from any of them.
+- [sugarforever/math-coach](https://github.com/sugarforever/math-coach) (MIT): its tutoring rules led to naming the rule behind every answer, pinpointing the exact mistake, and drawing the picture.
+- [Anas099X/OpenSAT](https://github.com/Anas099X/OpenSAT): its practice-test generator led to the timed module. Its question database was not used. Some entries appear to be official College Board questions, and some AI-written ones are wrong.
+- [Hemit99123/dailysat](https://github.com/Hemit99123/dailysat): nothing was taken. It has no license file and its seed questions are placeholders.
+
+**Feedback on the specific mistake**
+- All 400 generated questions now say why each wrong answer is tempting, for example: “You divided the whole $190 by $15 without first taking out the $40 sign-up fee.” It shows after a wrong answer, in the mistake journal, and in module reviews.
+- Every generated question names the rule it uses, for example “Zero-product property: if (x − r)(x − s) = 0, then x = r or x = s.”
+- The prompts, options, and answers of the 400 questions are unchanged, so existing progress still lines up.
+
+**Timed practice module** (Practice → “Timed module: 22 questions, 35 min”)
+- 22 questions in 35 minutes, the length of one digital SAT Math module.
+- Questions follow the SAT domain split (8 Algebra, 8 Advanced Math, 3 Problem-Solving & Data, 3 Geometry & Trigonometry), prefer questions the learner hasn't seen, and get harder through the module.
+- No hints during the test. Learners can skip, go back, mark questions for review, jump from a question grid, and use keys 1–4.
+- The countdown keeps running if the learner leaves the page or reloads, and the module is scored automatically at 0:00.
+- Results show the score, time, and a per-domain breakdown, plus a question-by-question review with the mistake note and rule. Every answer is saved to the learner's history and mistake journal. The last five modules can be reopened.
+- Scores are shown as practice accuracy, not an estimated SAT score.
+
+**Geometry diagrams**
+- 76 geometry questions now include a labeled diagram: right triangles (Pythagorean theorem, missing leg, trigonometry with θ), triangle area with dashed height, triangle angles, rectangles, circles, and arc-length sectors.
+- Diagrams are drawn from each question's own numbers, to scale where readable. Otherwise they carry “Note: figure not drawn to scale.”
+- Each diagram has a screen-reader description.
+
+**Other**
+- Fixed the Practice sidebar showing the “Focus domain” and “Difficulty” labels above the wrong dropdowns.
+- `questions-extra.js` is now minified, so it is 264 KB instead of 300 KB despite the new fields.
+- Offline cache bumped to `orbit-sat-v6-modules`.
+
 ## 2026-09-27 — Free study resources and Desmos strategy
 
 Sourced from the Mathematics, Statistics, SAT, and STEM-tools sections of [StudentSuite/awesome-study-resources](https://github.com/StudentSuite/awesome-study-resources) (MIT). That repo is a link list, so what was added here is links, not copied content. Only resources tagged free and from well-known publishers were used. Community or unknown sites were left out.

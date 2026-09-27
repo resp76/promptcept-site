@@ -36,6 +36,8 @@ Then use `npm run ios:open` or `npm run android:open` to build in Xcode or Andro
 - Hints precede explanations, and missed questions enter a retry journal.
 - Multiple learners can share a device. Each has a separate profile with an optional PIN. Progress, goals, and study history are stored only in local browser/app storage, per learner.
 - 566 questions: the originals in `app.js` plus 400 generated ones in `questions-extra.js` (`node sat/tools/generate-questions.mjs` rebuilds them).
+- Generated questions explain why each wrong answer is tempting and name the rule behind the answer. 76 geometry questions include diagrams.
+- Timed practice modules: 22 questions in 35 minutes, weighted like the real test and auto-scored at 0:00.
 - See `CHANGELOG.md` for the full change history.
 - Score estimates are directional coaching indicators, not official SAT scores.
 - Official scored checkpoints should be completed in College Board Bluebook.
