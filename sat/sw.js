@@ -1,4 +1,4 @@
-const CACHE = 'orbit-sat-v6-modules';
+const CACHE = 'orbit-sat-v7-gridin';
 const ASSETS = ['./', './index.html', './styles.css', './questions-extra.js', './app.js', './manifest.webmanifest', './icon.svg'];
 
 self.addEventListener('install', event => {

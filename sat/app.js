@@ -2420,6 +2420,9 @@ function renderHome() {
     </button>`;
   }).join('');
 
+  const due = dueReviews().length, chip = document.querySelector('#review-due-chip');
+  chip.hidden = !due;
+  chip.innerHTML = `<span aria-hidden="true">↻</span> ${due} question${due === 1 ? '' : 's'} due for spaced review <span aria-hidden="true">→</span>`;
   renderWeek();
 }
 
@@ -2445,6 +2448,15 @@ function practicePool() {
   const mode = document.querySelector('input[name="practice-mode"]:checked')?.value || 'adaptive';
   const domain = document.querySelector('#domain-select').value;
   let pool = QUESTION_BANK.filter(question => domain === 'all' || question.domain === domain);
+  if (mode === 'due') {
+    const dueIds = new Set(dueReviews().map(item => item.questionId));
+    pool = pool.filter(question => dueIds.has(question.id));
+    if (!pool.length) {
+      const next = reviewSchedule().length ? ` The next review is ${shortDate(nextReviewDate())}.` : '';
+      showToast(`Nothing is due for review in that selection.${next} Starting a smart mix instead.`);
+      pool = QUESTION_BANK.filter(question => domain === 'all' || question.domain === domain);
+    }
+  }
   if (mode === 'mistakes') {
     const missedIds = new Set(outstandingMistakes().map(attempt => attempt.questionId));
     pool = pool.filter(question => missedIds.has(question.id));
@@ -2496,12 +2508,14 @@ function renderQuestion() {
   const domain = DOMAINS[currentQuestion.domain];
   const letters = ['A', 'B', 'C', 'D'];
   document.querySelector('#question-card').innerHTML = `
-    <div class="question-meta"><span>${domain.name} · ${escapeHtml(currentQuestion.skill)}</span><span class="difficulty">${currentQuestion.difficulty}</span><span class="question-timer" id="question-timer">0:00</span></div>
+    <div class="question-meta"><span>${domain.name} · ${escapeHtml(currentQuestion.skill)}${isSpr(currentQuestion) ? ' · Grid-in' : ''}</span><span class="difficulty">${currentQuestion.difficulty}</span><span class="question-timer" id="question-timer">0:00</span></div>
     <h2 class="question-prompt">${escapeHtml(currentQuestion.prompt)}</h2>
-    ${currentQuestion.figure ? figureSvg(currentQuestion.figure) : ''}
-    <div class="options" role="radiogroup" aria-label="Answer choices">
+    ${currentQuestion.figure ? figureHtml(currentQuestion.figure) : ''}
+    ${isSpr(currentQuestion)
+      ? `<div class="spr-box"><label for="spr-input">Your answer <small>Grid-in</small></label><input id="spr-input" class="spr-input" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="6"><p class="spr-preview" id="spr-preview"></p><p class="spr-rules">${SPR_RULES}</p></div>`
+      : `<div class="options" role="radiogroup" aria-label="Answer choices">
       ${currentQuestion.options.map((option, index) => `<button class="option" type="button" role="radio" aria-checked="false" data-answer="${index}"><span class="option-letter">${letters[index]}</span><span>${escapeHtml(option)}</span></button>`).join('')}
-    </div>
+    </div>`}
     <div id="question-support" aria-live="polite"></div>
     <details class="hint-box"><summary>Formula guide & study tips</summary><p>${studyGuide(currentQuestion.domain)}</p><p>Write down what the question asks. Choose a method, work it out on paper, then check your answer in the original problem.</p><p><b>Desmos strategy:</b> ${DESMOS_TIP}</p><p><b>Free resources for this topic</b></p><ul class="resource-links">${resourceLinks(currentQuestion.domain)}</ul></details>
     <div class="question-actions"><button class="hint-button" type="button" id="show-hint">Give me a hint</button><button class="primary-button" type="button" id="check-answer" disabled>Check answer</button></div>`;
@@ -2540,12 +2554,22 @@ function showHint() {
 }
 
 function submitAnswer() {
-  if (!currentQuestion || selectedAnswer === null || questionAnswered) return;
+  if (!currentQuestion || questionAnswered) return;
+  const spr = isSpr(currentQuestion);
+  let response = selectedAnswer;
+  if (spr) {
+    response = document.querySelector('#spr-input').value.trim();
+    const parsed = parseSpr(response);
+    if (parsed.error) { document.querySelector('#spr-preview').textContent = parsed.error; return; }
+    document.querySelector('#spr-input').disabled = true;
+  } else if (selectedAnswer === null) return;
   clearInterval(timerInterval);
   questionAnswered = true;
-  const correct = selectedAnswer === currentQuestion.answer;
+  const correct = responseCorrect(currentQuestion, response);
+  const why = correct ? null : mistakeFor(currentQuestion, response);
+  if (spr) document.querySelector('#spr-input').classList.add(correct ? 'correct' : 'incorrect');
   const seconds = Math.max(1, Math.round((Date.now() - questionStartedAt) / 1000));
-  state.attempts.push({ questionId: currentQuestion.id, domain: currentQuestion.domain, skill: currentQuestion.skill, correct, selected: selectedAnswer, seconds, date: new Date().toISOString() });
+  state.attempts.push({ questionId: currentQuestion.id, domain: currentQuestion.domain, skill: currentQuestion.skill, correct, selected: response, seconds, date: new Date().toISOString() });
   recordStudy(Math.round(Math.min(seconds, 1800) / 60 * 10) / 10);
   saveState();
   document.querySelectorAll('.option').forEach((option, index) => {
@@ -2553,7 +2577,7 @@ function submitAnswer() {
     if (index === currentQuestion.answer) option.classList.add('correct');
     if (index === selectedAnswer && !correct) option.classList.add('incorrect');
   });
-  document.querySelector('#question-support').innerHTML = `<div class="feedback-box ${correct ? 'correct' : 'incorrect'}"><strong>${correct ? 'Correct — check your reasoning below.' : 'Let’s work through it.'}</strong><p>Answer: ${escapeHtml(currentQuestion.options[currentQuestion.answer])}</p>${!correct && currentQuestion.mistakes?.[selectedAnswer] ? `<p class="mistake-note"><b>About your answer, ${escapeHtml(currentQuestion.options[selectedAnswer])}:</b> ${escapeHtml(currentQuestion.mistakes[selectedAnswer])}</p>` : ''}<p>${escapeHtml(currentQuestion.explanation)}</p>${currentQuestion.rule ? `<p><b>Rule:</b> ${escapeHtml(currentQuestion.rule)}</p>` : ''}<p><b>Remember:</b> ${escapeHtml(currentQuestion.hint)}</p><label for="reflection">What will you remember next time?</label><textarea id="reflection" rows="2" maxlength="300" placeholder="Example: subtract the fixed fee before dividing."></textarea><button class="secondary-button" type="button" id="save-reflection">Save my note</button></div>`;
+  document.querySelector('#question-support').innerHTML = `<div class="feedback-box ${correct ? 'correct' : 'incorrect'}"><strong>${correct ? 'Correct — check your reasoning below.' : 'Let’s work through it.'}</strong><p>Answer: ${escapeHtml(spr ? currentQuestion.answer : currentQuestion.options[currentQuestion.answer])}</p>${why ? `<p class="mistake-note"><b>About your answer, ${escapeHtml(spr ? response : currentQuestion.options[response])}:</b> ${escapeHtml(why)}</p>` : ''}<p>${escapeHtml(currentQuestion.explanation)}</p>${currentQuestion.rule ? `<p><b>Rule:</b> ${escapeHtml(currentQuestion.rule)}</p>` : ''}<p><b>Remember:</b> ${escapeHtml(currentQuestion.hint)}</p><label for="reflection">What will you remember next time?</label><textarea id="reflection" rows="2" maxlength="300" placeholder="Example: subtract the fixed fee before dividing."></textarea><button class="secondary-button" type="button" id="save-reflection">Save my note</button></div>`;
   const actions = document.querySelector('.question-actions');
   actions.innerHTML = `<button class="secondary-button" type="button" id="similar-question">Try a similar question</button><button class="primary-button" type="button" id="next-question">Next question →</button>`;
   const today = state.attempts.filter(a => a.date.slice(0, 10) === todayKey()).length;
@@ -2625,12 +2649,13 @@ function outstandingMistakes() {
 
 function renderReview() {
   const mistakes = outstandingMistakes();
-  const totalMisses = state.attempts.filter(attempt => !attempt.correct).length;
+  const schedule = reviewSchedule(), plans = new Map(schedule.map(item => [item.questionId, item])), due = schedule.filter(item => item.due <= Date.now());
+  document.querySelector('#review-due-panel').innerHTML = !schedule.length ? '' : `<div><span class="eyebrow">Spaced review</span><h2>${due.length ? `${due.length} question${due.length === 1 ? '' : 's'} due today` : `Nothing due today. Next review ${shortDate(nextReviewDate())}.`}</h2><p>Missed questions come back after 1, then 3, 7, and 21 days. Get a question right at each review and it counts as mastered.</p></div>${due.length ? '<button class="primary-button" type="button" data-review-due>Start spaced review</button>' : ''}`;
   const resolved = new Set(state.attempts.filter(attempt => attempt.correct).map(attempt => attempt.questionId));
   const fastestOpportunity = Object.keys(DOMAINS).sort((a, b) => domainStats(a).accuracy - domainStats(b).accuracy)[0];
   document.querySelector('#review-summary').innerHTML = `
     <article class="summary-card"><strong>${mistakes.length}</strong><small>Ready to retry</small></article>
-    <article class="summary-card"><strong>${totalMisses}</strong><small>Total misses studied</small></article>
+    <article class="summary-card"><strong>${due.length}</strong><small>Due for review today</small></article>
     <article class="summary-card"><strong>${resolved.size}</strong><small>Questions recovered</small></article>
     <article class="summary-card"><strong>${DOMAINS[fastestOpportunity].name}</strong><small>Best growth area</small></article>`;
   const container = document.querySelector('#mistake-list');
@@ -2641,7 +2666,9 @@ function renderReview() {
   container.innerHTML = mistakes.map(attempt => {
     const question = questionById(attempt.questionId);
     if (!question) return '';
-    return `<article class="mistake-item"><div><span class="mistake-domain">${DOMAINS[question.domain].name} · ${escapeHtml(question.skill)}</span><h3>${escapeHtml(question.prompt)}</h3>${attempt.selected != null && question.mistakes?.[attempt.selected] ? `<p class="mistake-note"><b>You chose ${escapeHtml(question.options[attempt.selected])}:</b> ${escapeHtml(question.mistakes[attempt.selected])}</p>` : ''}<p>${escapeHtml(question.explanation)}</p>${question.rule ? `<p><b>Rule:</b> ${escapeHtml(question.rule)}</p>` : ''}${attempt.note ? `<p><b>My takeaway:</b> ${escapeHtml(attempt.note)}</p>` : ''} </div><button class="secondary-button" type="button" data-retry="${question.id}">Retry question</button></article>`;
+    const why = mistakeFor(question, attempt.selected), plan = plans.get(question.id);
+    const planText = plan ? `${plan.due <= Date.now() ? 'Due for review today' : `Next review ${shortDate(plan.due)}`} · review ${plan.step + 1} of ${REVIEW_INTERVALS.length}` : '';
+    return `<article class="mistake-item"><div><span class="mistake-domain">${DOMAINS[question.domain].name} · ${escapeHtml(question.skill)}${planText ? ` · ${planText}` : ''}</span><h3>${escapeHtml(question.prompt)}</h3>${why ? `<p class="mistake-note"><b>You ${isSpr(question) ? 'entered' : 'chose'} ${escapeHtml(isSpr(question) ? attempt.selected : question.options[attempt.selected])}:</b> ${escapeHtml(why)}</p>` : ''}<p>${escapeHtml(question.explanation)}</p>${question.rule ? `<p><b>Rule:</b> ${escapeHtml(question.rule)}</p>` : ''}${attempt.note ? `<p><b>My takeaway:</b> ${escapeHtml(attempt.note)}</p>` : ''} </div><button class="secondary-button" type="button" data-retry="${question.id}">Retry question</button></article>`;
   }).join('');
 }
 
@@ -2660,7 +2687,7 @@ function renderProgress() {
   }).join('');
   const history = [
     ...state.diagnostic.answers.length ? [{ date: state.diagnostic.completedAt, name: 'SAT Math diagnostic', result: `${state.diagnostic.answers.filter(item => item.correct).length}/${state.diagnostic.answers.length}`, good: true }] : [],
-    ...state.tests.slice(-3).reverse().map(record => { const { correct, total } = testScore(record); return { date: record.date, name: 'Timed practice module', result: `${correct}/${total}`, good: correct / total >= 0.7 }; }),
+    ...state.tests.slice(-3).reverse().map(record => { const { correct, total } = testScore(record); return { date: record.date, name: record.kind === 'section' ? 'Full Math section' : 'Timed practice module', result: `${correct}/${total}`, good: correct / total >= 0.7 }; }),
     ...state.attempts.slice(-12).reverse().map(attempt => ({ date: attempt.date, name: questionById(attempt.questionId)?.skill || 'Practice question', result: attempt.correct ? 'Correct' : 'Review', good: attempt.correct }))
   ];
   document.querySelector('#history-list').innerHTML = history.length ? history.map(item => `<div class="history-row"><time>${new Date(item.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</time><strong>${escapeHtml(item.name)}</strong><span class="history-result ${item.good ? 'good' : ''}">${item.result}</span></div>`).join('') : '<div class="empty-state">Complete the diagnostic or a practice question to start your history.</div>';
@@ -2873,7 +2900,10 @@ function handleClick(event) {
   const retry = event.target.closest('[data-retry]');
   if (retry) { routeTo('practice'); chooseQuestion(retry.dataset.retry); return; }
   if (event.target.closest('#print-progress')) return window.print();
-  if (event.target.closest('#start-test')) return startTest();
+  if (event.target.closest('[data-review-due]')) return startDueReview();
+  if (event.target.closest('#start-test')) return startTest('module');
+  if (event.target.closest('#start-section')) return startTest('section');
+  if (event.target.closest('#start-module-two')) return startModuleTwo();
   if (event.target.closest('#test-intro')) return renderTestIntro();
   const pastTest = event.target.closest('[data-test-result]');
   if (pastTest) return renderTestResults(state.tests[Number(pastTest.dataset.testResult)]);
@@ -2886,6 +2916,101 @@ function handleClick(event) {
   if (event.target.closest('#test-next')) { state.activeTest.index += 1; saveState(); return renderTest(); }
   if (event.target.closest('#test-flag')) { const i = state.activeTest.index; state.activeTest.flagged[i] = !state.activeTest.flagged[i]; saveState(); return renderTest(); }
   if (event.target.closest('#test-finish') || event.target.closest('#test-finish-early')) return confirmFinishTest();
+}
+
+// ---------- Grid-in (student-produced response) answers ----------
+
+const isSpr = q => q?.format === 'spr';
+const SPR_RULES = 'Type a whole number, decimal, or fraction (like 7/2). Up to 5 characters, or 6 with a minus sign. Mixed numbers like 3 1/2 aren’t accepted.';
+
+// Follows the digital SAT answer-box rules.
+function parseSpr(input) {
+  const s = String(input ?? '').trim().replace(/\s+/g, ' ').replace(/[−–]/g, '-');
+  if (!s) return { error: 'Type an answer first.' };
+  if (/^-?\d+ \d+\/\d+$/.test(s)) return { error: 'Mixed numbers aren’t accepted. Enter 3 1/2 as 7/2 or 3.5.' };
+  if (!/^-?(\d+\.?\d*|\.\d+|\d+\/\d+)$/.test(s)) return { error: 'Enter a whole number, a decimal, or a fraction such as 7/2.' };
+  const max = s.startsWith('-') ? 6 : 5;
+  if (s.length > max) return { error: `The SAT answer box fits ${max} characters${max === 6 ? ', including the minus sign' : ''}.` };
+  if (s.includes('/')) {
+    const [n, d] = s.replace('-', '').split('/').map(Number);
+    return d ? { text: s, fraction: [s.startsWith('-') ? -n : n, d] } : { error: 'A fraction can’t have 0 as its denominator.' };
+  }
+  return { text: s, decimal: Number(s) };
+}
+
+const sprValue = parsed => (parsed.fraction ? parsed.fraction[0] / parsed.fraction[1] : parsed.decimal);
+const terminates = d => { while (d % 2 === 0) d /= 2; while (d % 5 === 0) d /= 5; return d === 1; };
+
+// A repeating decimal counts only if it fills the answer box, truncated or rounded (2/3 → .6666 or .6667).
+function fillsBox(parsed, target) {
+  if (!parsed.text.includes('.')) return false;
+  const scale = 10 ** parsed.text.split('.')[1].length;
+  return [Math.trunc(target * scale), Math.round(target * scale)].some(v => Math.abs(v / scale - parsed.decimal) < 1e-9);
+}
+
+function sprMatches(parsed, [n, d]) {
+  if (parsed.fraction) return parsed.fraction[0] * d === n * parsed.fraction[1];
+  const target = n / d;
+  return Math.abs(parsed.decimal - target) < 1e-9 || (parsed.text.length === (parsed.text.startsWith('-') ? 6 : 5) && fillsBox(parsed, target));
+}
+
+function responseCorrect(q, response) {
+  if (!isSpr(q)) return response === q.answer;
+  const parsed = parseSpr(response);
+  return !parsed.error && sprMatches(parsed, q.exact);
+}
+
+function mistakeFor(q, response) {
+  if (response === null || response === undefined || response === '') return null;
+  if (!isSpr(q)) return q.mistakes?.[response] || null;
+  const parsed = parseSpr(response);
+  if (parsed.error) return parsed.error;
+  const value = sprValue(parsed);
+  const trap = q.traps?.find(t => { const p = parseSpr(t.value); return !p.error && Math.abs(sprValue(p) - value) < 1e-6; });
+  if (trap) return trap.why;
+  if (parsed.decimal !== undefined && !terminates(q.exact[1]) && fillsBox(parsed, q.exact[0] / q.exact[1])) return `Close, but on the SAT a repeating decimal has to fill the answer box. Enter ${q.answer} as a fraction, or use all ${parsed.text.startsWith('-') ? 6 : 5} spaces.`;
+  return null;
+}
+
+function sprPreview(input) {
+  if (!String(input).trim()) return '';
+  const parsed = parseSpr(input);
+  return parsed.error ? escapeHtml(parsed.error) : `Answer preview: <b>${escapeHtml(parsed.text)}</b>`;
+}
+
+// ---------- Spaced review of missed questions ----------
+
+// Days until the next review after each successful step; after the last step the question counts as mastered.
+const REVIEW_INTERVALS = [1, 3, 7, 21];
+const startOfDay = time => { const day = new Date(time); day.setHours(0, 0, 0, 0); return day.getTime(); };
+const addDays = (time, days) => { const day = new Date(startOfDay(time)); day.setDate(day.getDate() + days); return day.getTime(); };
+
+// Derived from attempt history: a miss schedules a review for tomorrow, each correct review on or after
+// its due day moves it further out, and another miss starts the ladder again.
+function reviewSchedule() {
+  const items = new Map();
+  for (const attempt of state.attempts) {
+    const time = Date.parse(attempt.date);
+    const item = items.get(attempt.questionId);
+    if (!attempt.correct) items.set(attempt.questionId, { questionId: attempt.questionId, step: 0, due: addDays(time, REVIEW_INTERVALS[0]) });
+    else if (item && !item.mastered && time >= item.due) {
+      item.step += 1;
+      item.mastered = item.step >= REVIEW_INTERVALS.length;
+      item.due = addDays(time, REVIEW_INTERVALS[item.step] || 0);
+    }
+  }
+  return [...items.values()].filter(item => !item.mastered && questionById(item.questionId));
+}
+
+const dueReviews = () => reviewSchedule().filter(item => item.due <= Date.now());
+const nextReviewDate = () => Math.min(...reviewSchedule().map(item => item.due));
+const shortDate = time => new Date(time).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+
+function startDueReview() {
+  document.querySelector('input[name="practice-mode"][value="due"]').checked = true;
+  document.querySelector('#domain-select').value = 'all';
+  routeTo('practice');
+  chooseQuestion();
 }
 
 // ---------- Geometry figures ----------
@@ -2901,8 +3026,18 @@ function fitRatio(ratio) {
   return { ratio: clamped, scaled: Math.abs(clamped - ratio) > 1e-9 };
 }
 
-function figureSvg(fig) {
-  let body = '', note = false, label = '';
+let figureCount = 0;
+
+function tableFigure(fig) {
+  const rowTotals = fig.cells.map(row => row[0] + row[1]), colTotals = [0, 1].map(c => fig.cells[0][c] + fig.cells[1][c]);
+  return `<figure class="question-figure"><table class="fig-table"><thead><tr><td></td>${fig.cols.map(col => `<th scope="col">${escapeHtml(col)}</th>`).join('')}<th scope="col">Total</th></tr></thead><tbody>`
+    + fig.rows.map((row, i) => `<tr><th scope="row">${escapeHtml(row)}</th>${fig.cells[i].map(v => `<td>${v}</td>`).join('')}<td>${rowTotals[i]}</td></tr>`).join('')
+    + `<tr><th scope="row">Total</th>${colTotals.map(v => `<td>${v}</td>`).join('')}<td>${rowTotals[0] + rowTotals[1]}</td></tr></tbody></table></figure>`;
+}
+
+function figureHtml(fig) {
+  if (fig.type === 'table') return tableFigure(fig);
+  let body = '', note = false, label = '', viewH = 200;
   const pts = list => list.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(' ');
   if (fig.type === 'right-triangle') {
     const s = Math.min(220 / fig.b, 140 / fig.a);
@@ -2957,46 +3092,95 @@ function figureSvg(fig) {
     const la = inside(P, Q, R, fig.A), lb = inside(Q, P, R, fig.B), lc = inside(R, P, Q, 180 - fig.A - fig.B);
     body = `<polygon class="fig-shape" points="${pts([P, Q, R])}"/>` + svgLabel(...la, fig.aLabel) + svgLabel(...lb, fig.bLabel) + svgLabel(...lc, fig.cLabel);
     label = `Triangle with angles ${fig.aLabel}, ${fig.bLabel}, and ${fig.cLabel}.`;
+  } else if (fig.type === 'function-graph') {
+    viewH = 250;
+    const { xmin, xmax, ymin, ymax, h, k } = fig, left = 16, right = 286, top = 12, bottom = 238;
+    const sx = x => left + (x - xmin) / (xmax - xmin) * (right - left), sy = y => bottom - (y - ymin) / (ymax - ymin) * (bottom - top);
+    for (let x = xmin; x <= xmax; x++) body += `<line class="${x === 0 ? 'fig-axis' : 'fig-grid'}" x1="${sx(x)}" y1="${top}" x2="${sx(x)}" y2="${bottom}"/>`;
+    for (let y = ymin; y <= ymax; y++) body += `<line class="${y === 0 ? 'fig-axis' : 'fig-grid'}" x1="${left}" y1="${sy(y)}" x2="${right}" y2="${sy(y)}"/>`;
+    for (let x = xmin; x <= xmax; x += 2) if (x) body += `<text class="fig-tick" x="${sx(x)}" y="${sy(0) + 12}" text-anchor="middle">${x}</text>`;
+    for (let y = ymin; y <= ymax; y += 2) if (y) body += `<text class="fig-tick" x="${sx(0) - 5}" y="${sy(y) + 3.5}" text-anchor="end">${y}</text>`;
+    const id = `plot-clip-${++figureCount}`, curve = [];
+    for (let x = xmin; x <= xmax + 1e-9; x += 0.1) curve.push([sx(x), sy((x - h) ** 2 + k)]);
+    body += `<clipPath id="${id}"><rect x="${left}" y="${top}" width="${right - left}" height="${bottom - top}"/></clipPath><polyline class="fig-curve" clip-path="url(#${id})" points="${pts(curve)}"/>`
+      + `<text class="fig-axis-title" x="${right - 2}" y="${sy(0) - 5}" text-anchor="end">x</text><text class="fig-axis-title" x="${sx(0) + 6}" y="${top + 9}">y</text>`;
+    label = `Graph of y = f(x), an upward-opening parabola on a grid from x = ${xmin} to ${xmax} and y = ${ymin} to ${ymax}. Its lowest point is at (${h}, ${k}) and it crosses the y-axis at (0, ${h * h + k}).`;
+  } else if (fig.type === 'scatter') {
+    viewH = 250;
+    const left = 44, right = 290, top = 10, bottom = 206, xmax = 11;
+    const yTop = Math.ceil(Math.max(...fig.points.map(p => p[1]), fig.m * xmax + fig.b) / 10) * 10, yStep = yTop / 5;
+    const sx = x => left + x / xmax * (right - left), sy = y => bottom - y / yTop * (bottom - top);
+    for (let y = 0; y <= yTop; y += yStep) body += `<line class="${y ? 'fig-grid' : 'fig-axis'}" x1="${left}" y1="${sy(y)}" x2="${right}" y2="${sy(y)}"/><text class="fig-tick" x="${left - 5}" y="${sy(y) + 3.5}" text-anchor="end">${y}</text>`;
+    for (let x = 0; x <= xmax; x++) body += `<line class="${x ? 'fig-grid' : 'fig-axis'}" x1="${sx(x)}" y1="${top}" x2="${sx(x)}" y2="${bottom}"/>${x % 2 ? '' : `<text class="fig-tick" x="${sx(x)}" y="${bottom + 13}" text-anchor="middle">${x}</text>`}`;
+    body += `<line class="fig-fit" x1="${sx(0)}" y1="${sy(fig.b)}" x2="${sx(xmax)}" y2="${sy(fig.m * xmax + fig.b)}"/>`
+      + fig.points.map(([x, y]) => `<circle class="fig-point" cx="${sx(x).toFixed(1)}" cy="${sy(y).toFixed(1)}" r="3.5"/>`).join('')
+      + `<text class="fig-axis-title" x="${(left + right) / 2}" y="${bottom + 30}" text-anchor="middle">${escapeHtml(fig.xLabel)}</text>`
+      + `<text class="fig-axis-title" transform="translate(11 ${(top + bottom) / 2}) rotate(-90)" text-anchor="middle">${escapeHtml(fig.yLabel)}</text>`;
+    label = `Scatterplot of ${fig.yLabel} versus ${fig.xLabel} with the line of best fit y = ${fig.m}x + ${fig.b}. Data points: ${fig.points.map(([x, y]) => `(${x}, ${y})`).join(', ')}.`;
   } else return '';
-  return `<figure class="question-figure"><svg viewBox="0 0 300 200" role="img" aria-label="${escapeHtml(label)}">${body}</svg>${note ? '<figcaption>Note: figure not drawn to scale.</figcaption>' : ''}</figure>`;
+  return `<figure class="question-figure"><svg viewBox="0 0 300 ${viewH}" role="img" aria-label="${escapeHtml(label)}">${body}</svg>${note ? '<figcaption>Note: figure not drawn to scale.</figcaption>' : ''}</figure>`;
 }
 
 // ---------- Timed practice module ----------
 
 const TEST_MINUTES = 35;
-// One digital SAT Math module: 22 questions, weighted like the real domain split (≈35/35/15/15%).
-const TEST_BLUEPRINT = { algebra: 8, advanced: 8, data: 3, geometry: 3 };
+// One digital SAT Math module: 22 questions, weighted like the real domain split (≈35/35/15/15%),
+// with about a quarter as grid-in. Each entry is [multiple choice, grid-in].
+const TEST_BLUEPRINT = { algebra: [6, 2], advanced: [6, 2], data: [2, 1], geometry: [2, 1] };
 const DIFFICULTY_RANK = { foundation: 0, medium: 1, advanced: 2 };
+// Orbit's own routing rule for Module 2 (College Board doesn't publish its exact rule).
+const ROUTE_THRESHOLD = 14;
+const ROUTE_MIX = { harder: [['advanced', 0.6], ['medium', 1]], easier: [['foundation', 0.5], ['medium', 1]] };
 let testInterval = null;
 
 const shuffled = list => list.map(item => [Math.random(), item]).sort((a, b) => a[0] - b[0]).map(([, item]) => item);
 const formatClock = ms => { const s = Math.max(0, Math.ceil(ms / 1000)); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; };
 const testRemaining = () => state.activeTest.startedAt + TEST_MINUTES * 60000 - Date.now();
 
-function pickTestQuestions() {
-  const seen = new Set(state.attempts.map(attempt => attempt.questionId));
-  const picked = Object.entries(TEST_BLUEPRINT).flatMap(([domain, count]) => {
-    const pool = shuffled(QUESTION_BANK.filter(question => question.domain === domain));
-    return [...pool.filter(q => !seen.has(q.id)), ...pool.filter(q => seen.has(q.id))].slice(0, count);
+function takeQuestions(pool, count, route, seen) {
+  const ranked = list => { const mixed = shuffled(list); return [...mixed.filter(q => !seen.has(q.id)), ...mixed.filter(q => seen.has(q.id))]; };
+  if (!ROUTE_MIX[route]) return ranked(pool).slice(0, count);
+  const picked = [];
+  for (const [difficulty, share] of ROUTE_MIX[route]) {
+    const want = share === 1 ? count - picked.length : Math.ceil(count * share);
+    picked.push(...ranked(pool.filter(q => q.difficulty === difficulty && !picked.includes(q))).slice(0, want));
+  }
+  return [...picked, ...ranked(pool.filter(q => !picked.includes(q))).slice(0, count - picked.length)];
+}
+
+function pickTestQuestions(route = 'standard', exclude = []) {
+  const seen = new Set(state.attempts.map(attempt => attempt.questionId)), skip = new Set(exclude);
+  const picked = Object.entries(TEST_BLUEPRINT).flatMap(([domain, [mc, spr]]) => {
+    const pool = QUESTION_BANK.filter(q => q.domain === domain && !skip.has(q.id));
+    return [...takeQuestions(pool.filter(q => !isSpr(q)), mc, route, seen), ...takeQuestions(pool.filter(isSpr), spr, route, seen)];
   });
   return shuffled(picked).sort((a, b) => DIFFICULTY_RANK[a.difficulty] - DIFFICULTY_RANK[b.difficulty]).map(question => question.id);
 }
 
-function startTest() {
-  const ids = pickTestQuestions();
-  state.activeTest = { ids, answers: ids.map(() => null), flagged: ids.map(() => false), index: 0, startedAt: Date.now() };
+function beginModule(test, ids) {
+  Object.assign(test, { ids, answers: ids.map(() => null), flagged: ids.map(() => false), index: 0, startedAt: Date.now() });
   saveState();
   renderTest();
   resumeTestTimer();
 }
 
+function startTest(kind = 'module') {
+  state.activeTest = { kind, moduleNumber: 1, route: 'standard', completed: [] };
+  beginModule(state.activeTest, pickTestQuestions());
+}
+
+function startModuleTwo() {
+  const test = state.activeTest;
+  beginModule(test, pickTestQuestions(test.route, test.completed.flatMap(module => module.ids)));
+}
+
 function resumeTestTimer() {
   clearInterval(testInterval);
-  if (state.activeTest) { testInterval = setInterval(tickTest, 1000); tickTest(); }
+  if (state.activeTest?.ids) { testInterval = setInterval(tickTest, 1000); tickTest(); }
 }
 
 function tickTest() {
-  if (!state.activeTest) return clearInterval(testInterval);
+  if (!state.activeTest?.ids) return clearInterval(testInterval);
   const remaining = testRemaining();
   if (remaining <= 0) return finishTest(true);
   const timer = document.querySelector('#test-timer');
@@ -3005,30 +3189,40 @@ function tickTest() {
 
 function testScore(record) {
   const questions = record.ids.map(questionById);
-  const correct = questions.filter((q, i) => q && record.answers[i] === q.answer).length;
+  const correct = questions.filter((q, i) => q && responseCorrect(q, record.answers[i])).length;
   return { questions, correct, total: record.ids.length };
+}
+
+function renderModuleBreak() {
+  document.querySelector('#test-content').innerHTML = `
+    <div class="page-heading"><div><span class="eyebrow">Full Math section</span><h1 id="test-title">Module 1 complete</h1><p class="page-lede">Module 2 has 22 more questions and its own ${TEST_MINUTES}-minute timer. As on the digital SAT, its difficulty depends on how Module 1 went. You’ll see results for both modules at the end.</p></div></div>
+    <button class="primary-button" type="button" id="start-module-two">Start Module 2</button>`;
 }
 
 function renderTest() {
   const container = document.querySelector('#test-content');
   const test = state.activeTest;
   if (!test) return renderTestIntro();
+  if (!test.ids) return renderModuleBreak();
   if (testRemaining() <= 0) return finishTest(true);
   const i = test.index, q = questionById(test.ids[i]), last = i === test.ids.length - 1;
   const letters = ['A', 'B', 'C', 'D'];
+  const answerArea = isSpr(q)
+    ? `<div class="spr-box"><label for="test-spr-input">Your answer <small>Grid-in</small></label><input id="test-spr-input" class="spr-input" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="6" value="${escapeHtml(test.answers[i] ?? '')}"><p class="spr-preview" id="spr-preview">${sprPreview(test.answers[i] ?? '')}</p><p class="spr-rules">${SPR_RULES}</p></div>`
+    : `<div class="options" role="radiogroup" aria-label="Answer choices">
+        ${q.options.map((option, n) => `<button class="option${test.answers[i] === n ? ' selected' : ''}" type="button" role="radio" aria-checked="${test.answers[i] === n}" data-test-answer="${n}"><span class="option-letter">${letters[n]}</span><span>${escapeHtml(option)}</span></button>`).join('')}
+      </div>`;
   container.innerHTML = `
     <div class="test-bar">
-      <strong>Question ${i + 1} of ${test.ids.length}</strong>
+      <strong>${test.kind === 'section' ? `Module ${test.moduleNumber} · ` : ''}Question ${i + 1} of ${test.ids.length}</strong>
       <span class="test-timer" id="test-timer" role="timer" aria-label="Time remaining">${formatClock(testRemaining())}</span>
       <button class="text-button" type="button" id="test-flag" aria-pressed="${test.flagged[i]}">${test.flagged[i] ? '★ Marked for review' : '☆ Mark for review'}</button>
     </div>
     <article class="question-card test-card">
       <h2 class="question-prompt">${escapeHtml(q.prompt)}</h2>
-      ${q.figure ? figureSvg(q.figure) : ''}
-      <div class="options" role="radiogroup" aria-label="Answer choices">
-        ${q.options.map((option, n) => `<button class="option${test.answers[i] === n ? ' selected' : ''}" type="button" role="radio" aria-checked="${test.answers[i] === n}" data-test-answer="${n}"><span class="option-letter">${letters[n]}</span><span>${escapeHtml(option)}</span></button>`).join('')}
-      </div>
-      <div class="question-actions"><button class="secondary-button" type="button" id="test-prev" ${i === 0 ? 'disabled' : ''}>← Back</button><button class="primary-button" type="button" id="${last ? 'test-finish' : 'test-next'}">${last ? 'Finish and score' : 'Next →'}</button></div>
+      ${q.figure ? figureHtml(q.figure) : ''}
+      ${answerArea}
+      <div class="question-actions"><button class="secondary-button" type="button" id="test-prev" ${i === 0 ? 'disabled' : ''}>← Back</button><button class="primary-button" type="button" id="${last ? 'test-finish' : 'test-next'}">${last ? (test.kind === 'section' && test.moduleNumber === 1 ? 'Finish Module 1' : 'Finish and score') : 'Next →'}</button></div>
     </article>
     <nav class="test-grid" aria-label="Question navigator">${test.ids.map((_, n) => `<button type="button" class="test-dot${test.answers[n] !== null ? ' answered' : ''}${test.flagged[n] ? ' flagged' : ''}${n === i ? ' current' : ''}" data-test-goto="${n}" aria-label="Question ${n + 1}${test.answers[n] !== null ? ', answered' : ''}${test.flagged[n] ? ', marked for review' : ''}"${n === i ? ' aria-current="step"' : ''}>${n + 1}</button>`).join('')}</nav>
     <button class="danger-link" type="button" id="test-finish-early">Finish module now</button>`;
@@ -3037,60 +3231,80 @@ function renderTest() {
 function renderTestIntro() {
   const past = state.tests.map((record, index) => ({ record, index })).slice(-5).reverse();
   document.querySelector('#test-content').innerHTML = `
-    <div class="page-heading"><div><span class="eyebrow">Practice test mode</span><h1 id="test-title">Timed practice module</h1><p class="page-lede">22 questions in ${TEST_MINUTES} minutes, the same length as one digital SAT Math module.</p></div></div>
+    <div class="page-heading"><div><span class="eyebrow">Practice test mode</span><h1 id="test-title">Timed practice</h1><p class="page-lede">One 22-question module in ${TEST_MINUTES} minutes, or the full two-module Math section like the digital SAT.</p></div></div>
     <div class="test-intro-grid">
       <section class="progress-panel"><h2>How it works</h2><ul class="test-rules">
-        <li>Questions from all four domains in SAT proportions: 8 Algebra, 8 Advanced Math, 3 Problem-Solving &amp; Data, 3 Geometry &amp; Trigonometry. They get harder as you go.</li>
+        <li>Each module has 22 questions in SAT proportions: 8 Algebra, 8 Advanced Math, 3 Problem-Solving &amp; Data, 3 Geometry &amp; Trigonometry. About a quarter are grid-in: you type the answer instead of choosing one.</li>
+        <li><b>Full section:</b> 44 questions in two ${TEST_MINUTES}-minute modules. Module 2 is harder if you get ${ROUTE_THRESHOLD} or more right in Module 1, and easier otherwise, like the adaptive digital SAT. (This cutoff is Orbit’s; College Board doesn’t publish its own.)</li>
         <li>No hints or explanations until you finish. You can skip, go back, and mark questions for review.</li>
         <li>The timer keeps running if you leave this page. At 0:00 the module is scored automatically.</li>
         <li>Have scratch paper ready. As on the real test, you can use the <a href="https://www.desmos.com/calculator" target="_blank" rel="noopener noreferrer">Desmos calculator ↗</a>.</li>
-      </ul><button class="primary-button" type="button" id="start-test">Start the ${TEST_MINUTES}-minute module</button></section>
-      <section class="progress-panel"><h2>Past modules</h2>${past.length ? past.map(({ record, index }) => {
+      </ul><div class="test-start-buttons"><button class="primary-button" type="button" id="start-test">One module · ${TEST_MINUTES} min</button><button class="secondary-button" type="button" id="start-section">Full section · 2 × ${TEST_MINUTES} min</button></div></section>
+      <section class="progress-panel"><h2>Past tests</h2>${past.length ? past.map(({ record, index }) => {
         const { correct, total } = testScore(record);
-        return `<div class="history-row"><time>${new Date(record.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</time><strong>${correct} of ${total} correct · ${formatClock(record.seconds * 1000)}</strong><button class="text-button" type="button" data-test-result="${index}">Review</button></div>`;
+        return `<div class="history-row"><time>${new Date(record.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</time><strong>${record.kind === 'section' ? 'Full section' : 'Module'} · ${correct} of ${total} correct · ${formatClock(record.seconds * 1000)}</strong><button class="text-button" type="button" data-test-result="${index}">Review</button></div>`;
       }).join('') : '<p class="page-lede">No modules yet. Your results will appear here.</p>'}</section>
     </div>`;
 }
 
 function finishTest(timeUp = false) {
   const test = state.activeTest;
-  if (!test) return;
+  if (!test?.ids) return;
   clearInterval(testInterval);
   const finishedAt = Math.min(Date.now(), test.startedAt + TEST_MINUTES * 60000);
   const seconds = Math.round((finishedAt - test.startedAt) / 1000), date = new Date(finishedAt).toISOString();
   test.ids.forEach((id, i) => {
     const q = questionById(id);
-    if (q) state.attempts.push({ questionId: id, domain: q.domain, skill: q.skill, correct: test.answers[i] === q.answer, selected: test.answers[i], seconds: Math.round(seconds / test.ids.length), date, source: 'test' });
+    if (q) state.attempts.push({ questionId: id, domain: q.domain, skill: q.skill, correct: responseCorrect(q, test.answers[i]), selected: test.answers[i], seconds: Math.round(seconds / test.ids.length), date, source: 'test' });
   });
-  const record = { date, ids: test.ids, answers: test.answers, seconds, timeUp };
+  recordStudy(Math.round(seconds / 6) / 10);
+  const moduleRecord = { ids: test.ids, answers: test.answers, seconds, timeUp, route: test.route || 'standard' };
+  const onTestView = document.querySelector('#view-test').classList.contains('active');
+  if (test.kind === 'section' && test.moduleNumber === 1) {
+    const route = testScore(moduleRecord).correct >= ROUTE_THRESHOLD ? 'harder' : 'easier';
+    state.activeTest = { kind: 'section', moduleNumber: 2, route, completed: [moduleRecord], ids: null };
+    saveState();
+    renderTest();
+    if (timeUp && !onTestView) showToast('Module 1 time is up. Module 2 is ready when you are: Practice → Timed practice.');
+    return;
+  }
+  const modules = [...(test.completed || []), moduleRecord];
+  const record = modules.length > 1
+    ? { date, kind: 'section', modules, ids: modules.flatMap(m => m.ids), answers: modules.flatMap(m => m.answers), seconds: modules.reduce((sum, m) => sum + m.seconds, 0), timeUp: modules.some(m => m.timeUp) }
+    : { date, ...moduleRecord };
   state.tests.push(record);
   state.activeTest = null;
-  recordStudy(Math.round(seconds / 6) / 10);
   saveState();
   renderTestResults(record);
-  if (timeUp && !document.querySelector('#view-test').classList.contains('active')) showToast('Time’s up. Your practice module has been scored. Open it from Practice.');
+  if (timeUp && !onTestView) showToast('Time’s up. Your practice test has been scored. Open it from Practice.');
 }
 
 function renderTestResults(record) {
   const { questions, correct, total } = testScore(record);
   const letters = ['A', 'B', 'C', 'D'];
+  const firstModuleLength = record.modules?.[0].ids.length ?? total;
   const byDomain = Object.entries(DOMAINS).map(([id, domain]) => {
     const items = questions.map((q, i) => [q, i]).filter(([q]) => q?.domain === id);
-    return `<div class="result-domain"><strong>${domain.name}</strong><small>${items.filter(([q, i]) => record.answers[i] === q.answer).length} of ${items.length} correct</small></div>`;
+    return `<div class="result-domain"><strong>${domain.name}</strong><small>${items.filter(([q, i]) => responseCorrect(q, record.answers[i])).length} of ${items.length} correct</small></div>`;
   }).join('');
+  const byModule = record.modules ? `<div class="result-domains">${record.modules.map((module, n) => `<div class="result-domain"><strong>Module ${n + 1}${n ? ` (${module.route} version)` : ''}</strong><small>${testScore(module).correct} of ${module.ids.length} correct · ${formatClock(module.seconds * 1000)}</small></div>`).join('')}</div>` : '';
   const review = questions.map((q, i) => {
     if (!q) return '';
-    const chosen = record.answers[i], ok = chosen === q.answer;
-    const why = !ok && chosen !== null ? q.mistakes?.[chosen] : null;
-    return `<article class="test-review-item ${ok ? 'good' : 'miss'}"><span class="mistake-domain">Question ${i + 1} · ${DOMAINS[q.domain].name} · ${escapeHtml(q.skill)}</span><h3>${escapeHtml(q.prompt)}</h3>
-      <p><b>${ok ? '✓ Correct' : '✗ ' + (chosen === null ? 'No answer' : `You chose ${letters[chosen]}: ${escapeHtml(q.options[chosen])}`)}</b>${ok ? '' : ` · Correct: ${letters[q.answer]}: ${escapeHtml(q.options[q.answer])}`}</p>
+    const chosen = record.answers[i], ok = responseCorrect(q, chosen), answered = chosen !== null && chosen !== '';
+    const why = ok ? null : mistakeFor(q, chosen);
+    const place = record.modules ? `Module ${i < firstModuleLength ? 1 : 2} · Question ${i < firstModuleLength ? i + 1 : i - firstModuleLength + 1}` : `Question ${i + 1}`;
+    const yours = isSpr(q) ? `You entered ${escapeHtml(chosen)}` : `You chose ${letters[chosen]}: ${escapeHtml(q.options[chosen])}`;
+    const right = isSpr(q) ? escapeHtml(q.answer) : `${letters[q.answer]}: ${escapeHtml(q.options[q.answer])}`;
+    return `<article class="test-review-item ${ok ? 'good' : 'miss'}"><span class="mistake-domain">${place} · ${DOMAINS[q.domain].name} · ${escapeHtml(q.skill)}${isSpr(q) ? ' · Grid-in' : ''}</span><h3>${escapeHtml(q.prompt)}</h3>
+      <p><b>${ok ? '✓ Correct' : '✗ ' + (answered ? yours : 'No answer')}</b>${ok ? '' : ` · Correct: ${right}`}</p>
       ${why ? `<p class="mistake-note">${escapeHtml(why)}</p>` : ''}<p>${escapeHtml(q.explanation)}</p>${q.rule ? `<p><b>Rule:</b> ${escapeHtml(q.rule)}</p>` : ''}</article>`;
   }).join('');
   document.querySelector('#test-content').innerHTML = `
-    <div class="page-heading"><div><span class="eyebrow">Module scored</span><h1 id="test-title">${correct} of ${total} correct</h1><p class="page-lede">${Math.round(correct / total * 100)}% in ${formatClock(record.seconds * 1000)}${record.timeUp ? ' (time ran out)' : ''}. This is practice accuracy, not an official SAT score. For a scored test, use Bluebook.</p></div></div>
+    <div class="page-heading"><div><span class="eyebrow">${record.kind === 'section' ? 'Full section scored' : 'Module scored'}</span><h1 id="test-title">${correct} of ${total} correct</h1><p class="page-lede">${Math.round(correct / total * 100)}% in ${formatClock(record.seconds * 1000)}${record.timeUp ? ' (time ran out)' : ''}. This is practice accuracy, not an official SAT score. For a scored test, use Bluebook.</p></div></div>
+    ${byModule}
     <div class="result-domains">${byDomain}</div>
-    <div class="question-actions"><button class="secondary-button" type="button" data-route="review">Open mistake journal</button><button class="primary-button" type="button" id="test-intro">Back to practice modules</button></div>
-    <section class="progress-panel"><div class="section-heading"><div><span class="eyebrow">Question by question</span><h2>Review your module</h2></div></div>${review}</section>`;
+    <div class="question-actions"><button class="secondary-button" type="button" data-route="review">Open mistake journal</button><button class="primary-button" type="button" id="test-intro">Back to timed practice</button></div>
+    <section class="progress-panel"><div class="section-heading"><div><span class="eyebrow">Question by question</span><h2>Review your answers</h2></div></div>${review}</section>`;
 }
 
 function confirmFinishTest() {
@@ -3170,10 +3384,29 @@ function init() {
   document.addEventListener('keydown', event => {
     if (event.target.closest('input, textarea, select') || document.querySelector('dialog[open]')) return;
     const key = Number(event.key);
-    if (state.activeTest && document.querySelector('#view-test').classList.contains('active') && key >= 1 && key <= 4) return chooseTestAnswer(key - 1);
+    if (state.activeTest?.ids && document.querySelector('#view-test').classList.contains('active') && key >= 1 && key <= 4) {
+      if (!isSpr(questionById(state.activeTest.ids[state.activeTest.index]))) chooseTestAnswer(key - 1);
+      return;
+    }
     if (!currentQuestion || questionAnswered || !document.querySelector('#view-practice').classList.contains('active')) return;
     const number = Number(event.key);
     if (number >= 1 && number <= 4) selectAnswer(number - 1);
+  });
+  document.addEventListener('input', event => {
+    if (event.target.id === 'spr-input') {
+      document.querySelector('#check-answer').disabled = !event.target.value.trim();
+      document.querySelector('#spr-preview').innerHTML = sprPreview(event.target.value);
+    }
+    if (event.target.id === 'test-spr-input' && state.activeTest?.ids) {
+      const i = state.activeTest.index, value = event.target.value.trim();
+      state.activeTest.answers[i] = value || null;
+      saveState();
+      document.querySelector('#spr-preview').innerHTML = sprPreview(value);
+      document.querySelector(`[data-test-goto="${i}"]`)?.classList.toggle('answered', Boolean(value));
+    }
+  });
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Enter' && event.target.id === 'spr-input') { event.preventDefault(); submitAnswer(); }
   });
   document.querySelector('#pin-form').addEventListener('submit', event => {
     event.preventDefault();

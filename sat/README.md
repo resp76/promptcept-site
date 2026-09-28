@@ -35,9 +35,11 @@ Then use `npm run ios:open` or `npm run android:open` to build in Xcode or Andro
 - Smart practice prioritizes the learner’s weaker domains.
 - Hints precede explanations, and missed questions enter a retry journal.
 - Multiple learners can share a device. Each has a separate profile with an optional PIN. Progress, goals, and study history are stored only in local browser/app storage, per learner.
-- 566 questions: the originals in `app.js` plus 400 generated ones in `questions-extra.js` (`node sat/tools/generate-questions.mjs` rebuilds them).
+- 746 questions: the originals in `app.js` plus 580 generated ones in `questions-extra.js`, 120 of them grid-in (`node sat/tools/generate-questions.mjs` rebuilds them).
+- Grid-in answers follow the digital SAT answer-box rules (fractions or decimals, 5 characters, repeating decimals fill the box).
+- Missed questions return on a spaced-review schedule of 1, 3, 7, and 21 days.
 - Generated questions explain why each wrong answer is tempting and name the rule behind the answer. 76 geometry questions include diagrams.
-- Timed practice modules: 22 questions in 35 minutes, weighted like the real test and auto-scored at 0:00.
+- Timed practice: a single 22-question module in 35 minutes, or the full 44-question section, where Module 2 adapts to Module 1. Both are weighted like the real test and auto-scored at 0:00.
 - See `CHANGELOG.md` for the full change history.
 - Score estimates are directional coaching indicators, not official SAT scores.
 - Official scored checkpoints should be completed in College Board Bluebook.
